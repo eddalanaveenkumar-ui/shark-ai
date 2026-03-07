@@ -1,0 +1,3148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>One Piece AI · Real Icons + Logo</title>
+  <!-- Font Awesome 6 (free) for real icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Markdown + code highlighting libraries -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <!-- Document Parsing Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <!-- PPT Generation -->
+  <script src="https://cdn.jsdelivr.net/gh/gitbrent/PptxGenJS@3.12.0/dist/pptxgen.bundle.js"></script>
+  <!-- PDF Generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      scrollbar-width: none;
+      /* Firefox */
+      -ms-overflow-style: none;
+      /* IE and Edge */
+    }
+
+    *::-webkit-scrollbar {
+      display: none;
+      /* Chrome, Safari and Opera */
+    }
+
+    :root {
+      --bg-dark: #000000;
+      --sidebar-bg: #000000;
+      --border-color: transparent;
+      --accent-blue: #C0C0C0;
+      --accent-blue-light: #E8E8E8;
+      --green: #141414;
+      --green-hover: #262626;
+      --text-light: #F5F5F5;
+      --text-muted: #808080;
+    }
+
+    body,
+    html {
+      font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+      height: 100%;
+      height: 100dvh;
+      width: 100%;
+      width: 100dvw;
+      overflow: hidden;
+      background: var(--bg-dark);
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .container {
+      display: flex;
+      height: 100%;
+      width: 100%;
+      position: relative;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar {
+      width: 280px;
+      background: var(--sidebar-bg);
+      display: flex;
+      flex-direction: column;
+      border-right: none;
+      transition: transform 0.25s ease-in-out;
+      z-index: 100;
+    }
+
+    @media (max-width: 640px) {
+      .sidebar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        transform: translateX(-100%);
+        width: 85%;
+        max-width: 320px;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+        background: var(--sidebar-bg);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+    }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 90;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+
+    @media (max-width: 640px) {
+      .sidebar-overlay.visible {
+        display: block;
+        opacity: 1;
+        pointer-events: auto;
+      }
+    }
+
+    .sidebar header {
+      padding: 18px 16px;
+      font-size: 1.3rem;
+      font-weight: 600;
+      text-align: center;
+      border-bottom: 1px solid var(--border-color);
+      color: white;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    /* real icon in sidebar header */
+    .sidebar header i {
+      color: var(--accent-blue);
+      font-size: 1.5rem;
+    }
+
+    .sidebar button#newChatBtn {
+      margin: 12px 16px 10px;
+      padding: 14px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 30px;
+      cursor: pointer;
+      background: var(--green);
+      color: var(--text-light);
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      touch-action: manipulation;
+    }
+
+    .sidebar button#newChatBtn i {
+      font-size: 1.1rem;
+      color: var(--accent-blue);
+    }
+
+    .sidebar button#newChatBtn:hover {
+      background: var(--green-hover);
+      border-color: var(--accent-blue);
+    }
+
+    .sidebar button#newChatBtn:active {
+      transform: scale(0.98);
+    }
+
+    .chat-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 12px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .chat-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 12px 12px 16px;
+      border-radius: 12px;
+      margin-bottom: 6px;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text-light);
+      font-size: 0.95rem;
+      transition: 0.15s;
+      gap: 8px;
+      border: none;
+      touch-action: manipulation;
+    }
+
+    .chat-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .chat-item:active {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .chat-item.active {
+      background: rgba(255, 255, 255, 0.15);
+      color: var(--text-light);
+    }
+
+    .chat-title {
+      flex: 1;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      font-weight: 500;
+    }
+
+    .delete-chat {
+      background: transparent;
+      border: none;
+      color: inherit;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 6px 8px;
+      border-radius: 8px;
+      line-height: 1;
+      opacity: 0.7;
+      transition: 0.15s;
+      touch-action: manipulation;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .delete-chat i {
+      font-size: 1.2rem;
+    }
+
+    .delete-chat:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .delete-chat:active {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* ===== MAIN CHAT AREA ===== */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-dark);
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    /* Header with logo + centered title */
+    .chat-header {
+      padding: 14px 16px;
+      background: transparent !important;
+      border-bottom: none;
+      font-weight: 600;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 60px;
+      position: relative;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .custom-hamburger {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 24px;
+      height: 16px;
+    }
+
+    .custom-hamburger span {
+      display: block;
+      height: 2px;
+      background-color: var(--accent-blue);
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+
+    .custom-hamburger span:nth-child(1) {
+      width: 100%;
+    }
+
+    .custom-hamburger span:nth-child(2) {
+      width: 60%;
+    }
+
+    .custom-hamburger span:nth-child(3) {
+      width: 40%;
+    }
+
+    .menu-toggle:hover .custom-hamburger span {
+      width: 100%;
+    }
+
+    .menu-toggle {
+      background: transparent;
+      border: none;
+      color: var(--accent-blue);
+      font-size: 1.8rem;
+      cursor: pointer;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      touch-action: manipulation;
+    }
+
+    .menu-toggle i {
+      font-size: 1.8rem;
+    }
+
+    .menu-toggle:hover {
+      background: #2d3b4f;
+    }
+
+    .menu-toggle:active {
+      background: #3f4a5c;
+    }
+
+    @media (min-width: 641px) {
+      .menu-toggle {
+        display: none;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .menu-toggle {
+        display: flex;
+      }
+    }
+
+    /* Remove centered positioning */
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #2a2a2a, #000000);
+      border: 1px solid #444;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-light);
+      font-size: 1.1rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    }
+
+    /* Simple "OP" logo – you can replace with any SVG if desired */
+    .logo-icon span,
+    .logo-icon i {
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .header-title {
+      background: linear-gradient(135deg, #FFFFFF 0%, #A0A0A0 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+      font-size: 1.4rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .header-right {
+      width: 44px;
+      opacity: 1;
+    }
+
+    /* chat messages */
+    #chat {
+      flex: 1;
+      padding: 16px 16px 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+    }
+
+    .msg-wrapper {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      gap: 6px;
+    }
+
+    .msg-wrapper-user {
+      align-items: flex-end;
+    }
+
+    .msg-wrapper-bot {
+      align-items: flex-start;
+    }
+
+    .msg {
+      position: relative;
+      max-width: 85%;
+      padding: 14px 18px;
+      border-radius: 22px;
+      line-height: 1.5;
+      word-wrap: break-word;
+      background: #111111;
+      border: 1px solid var(--border-color);
+      color: var(--text-light);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      font-size: 1rem;
+    }
+
+    /* Bot messages: no bubble — text floats directly on background */
+    .msg.bot,
+    .msg.assistant {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0 4px;
+      max-width: 92%;
+    }
+
+    body.light-theme .msg.bot,
+    body.light-theme .msg.assistant {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    /* Divider line between every paragraph in bot output */
+    .msg.bot .msg-content p+p,
+    .msg.assistant .msg-content p+p {
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+      margin-top: 12px;
+      padding-top: 12px;
+    }
+
+    body.light-theme .msg.bot .msg-content p+p,
+    body.light-theme .msg.assistant .msg-content p+p {
+      border-top: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    @media (min-width: 768px) {
+      .msg {
+        max-width: 75%;
+      }
+    }
+
+    /* ---- STREAMING 6-CHAR TRAILING SHINE ANIMATION ---- */
+    @keyframes shineGlow {
+
+      0%,
+      100% {
+        color: #56b4ff;
+        text-shadow: 0 0 8px rgba(86, 180, 255, 0.95), 0 0 18px rgba(86, 180, 255, 0.5);
+      }
+
+      50% {
+        color: #87d4ff;
+        text-shadow: 0 0 16px rgba(135, 212, 255, 1), 0 0 28px rgba(86, 180, 255, 0.6);
+      }
+    }
+
+    .gen-normal {
+      color: var(--text-light);
+      white-space: pre-wrap;
+    }
+
+    .gen-shine {
+      animation: shineGlow 0.75s ease-in-out infinite;
+      white-space: pre-wrap;
+    }
+
+    .msg.bot.streaming .msg-content {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* ----------------------------------------------------- */
+
+    .msg.user {
+      background: #0d0d0d;
+      border-color: var(--accent-blue);
+    }
+
+    body.light-theme {
+      --bg-dark: #fbfbfb;
+      --sidebar-bg: #f3f3f3;
+      --border-color: #e0e0e0;
+      --accent-blue: #000000;
+      --accent-blue-light: #333333;
+      --green: #e6e6e6;
+      --green-hover: #d4d4d4;
+      --text-light: #1d1d1f;
+      --text-muted: #86868b;
+    }
+
+    body.light-theme .msg {
+      background: #ffffff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      border: 1px solid var(--border-color);
+    }
+
+    body.light-theme .msg.user {
+      background: #f4f4f4;
+      border-color: #e0e0e0;
+    }
+
+    body.light-theme .logo-icon {
+      background: #ffffff;
+      border: 1px solid #d2d2d7;
+      color: #1d1d1f;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    body.light-theme .header-title {
+      background: none;
+      -webkit-text-fill-color: initial;
+      color: #1d1d1f;
+    }
+
+    body.light-theme .ability-card {
+      background: #ffffff !important;
+      border: 1px solid #d2d2d7 !important;
+      color: #1d1d1f !important;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02) !important;
+    }
+
+    body.light-theme .ability-card i {
+      color: #000000 !important;
+    }
+
+    body.light-theme .empty-state h3,
+    body.light-theme .empty-state p {
+      color: #1d1d1f !important;
+    }
+
+    body.light-theme .empty-state>i {
+      color: #666666 !important;
+      text-shadow: none !important;
+    }
+
+    body.light-theme .ability-card:hover {
+      background: #f5f5f7 !important;
+      border-color: #000000 !important;
+    }
+
+    body.light-theme #input {
+      background: #ffffff;
+      color: #1d1d1f;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    body.light-theme #input:focus {
+      border-color: #000000;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08), 0 0 0 1px #000000;
+    }
+
+    body.light-theme #sendBtn {
+      background: #000000;
+      color: #ffffff;
+    }
+
+    body.light-theme .dropdown-menu {
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    body.light-theme .dropdown-item:hover {
+      background: #f5f5f7;
+    }
+
+    body.light-theme .chat-item:hover {
+      background: rgba(0, 0, 0, 0.04);
+    }
+
+    body.light-theme .chat-item:active {
+      background: rgba(0, 0, 0, 0.08);
+    }
+
+    body.light-theme .chat-item.active {
+      background: rgba(0, 0, 0, 0.08);
+      color: #000000;
+      font-weight: 600;
+    }
+
+    body.light-theme .delete-chat:hover,
+    body.light-theme .menu-toggle:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    /* Message Actions Toolbar */
+    .msg-actions {
+      display: flex;
+      gap: 10px;
+      padding: 0 12px;
+    }
+
+    .msg-action-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 0.2s;
+    }
+
+    .msg-action-btn:hover {
+      color: var(--text-light);
+    }
+
+    /* Dropdown for action tools */
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 5px);
+      right: 0;
+      background: #1f1f1f;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 8px 0;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      z-index: 100;
+    }
+
+    .dropdown-menu.show {
+      display: block;
+    }
+
+    .dropdown-item {
+      display: block;
+      width: 100%;
+      padding: 8px 16px;
+      background: transparent;
+      border: none;
+      color: var(--text-light);
+      text-align: left;
+      cursor: pointer;
+      font-size: 0.95rem;
+      white-space: nowrap;
+    }
+
+    .dropdown-item:hover {
+      background: #333;
+    }
+
+    .dropdown-item i {
+      margin-right: 6px;
+    }
+
+    /* Stream Token Fade Effect */
+    .stream-delta {
+      color: #00bfff;
+      /* sky blue */
+      text-shadow: 0 0 8px rgba(0, 191, 255, 0.8), 0 0 12px rgba(0, 191, 255, 0.5);
+      animation: streamFade 0.5s forwards ease-out;
+    }
+
+    body.light-theme .stream-delta {
+      color: #007aff;
+      /* Deep iOS blue */
+      text-shadow: 0 0 4px rgba(0, 122, 255, 0.3);
+    }
+
+    @keyframes streamFade {
+      100% {
+        color: var(--text-light);
+        text-shadow: none;
+      }
+    }
+
+    .msg-content {
+      margin-bottom: 20px;
+      overflow-x: auto;
+    }
+
+    .msg-content p {
+      margin: 0 0 10px 0;
+    }
+
+    .msg-content p:last-child {
+      margin-bottom: 0;
+    }
+
+    .msg-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 12px;
+      margin-top: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      display: block;
+    }
+
+    .msg-content pre {
+      position: relative;
+      background: #0d1117;
+      border-radius: 14px;
+      padding: 36px 12px 12px;
+      overflow-x: auto;
+      margin: 12px 0;
+      font-size: 0.9rem;
+    }
+
+    .code-lang-label {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #161b22;
+      color: #8b949e;
+      font-size: 0.75rem;
+      font-family: inherit;
+      padding: 6px 16px;
+      border-top-left-radius: 14px;
+      border-top-right-radius: 14px;
+      text-transform: uppercase;
+      font-weight: 600;
+      user-select: none;
+    }
+
+    .msg-content code {
+      font-family: 'Fira Code', 'Courier New', monospace;
+      font-size: 0.9em;
+      background: #2d3b4f;
+      padding: 3px 8px;
+      border-radius: 8px;
+    }
+
+    body.light-theme .msg-content code {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .msg-content pre code {
+      background: transparent;
+      padding: 0;
+      color: #f8f8f2;
+    }
+
+    body.light-theme .msg-content pre code {
+      background: transparent;
+      color: #f8f8f2;
+    }
+
+    .copy-code-btn,
+    .download-code-btn {
+      position: absolute;
+      top: 4px;
+      right: 8px;
+      background: transparent;
+      border: none;
+      color: #8b949e;
+      font-size: 1.2rem;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: 0.15s;
+      line-height: 1;
+      z-index: 10;
+      touch-action: manipulation;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .download-code-btn {
+      right: 48px;
+    }
+
+    .copy-code-btn i,
+    .download-code-btn i {
+      font-size: 1.2rem;
+    }
+
+    .copy-code-btn:hover,
+    .download-code-btn:hover {
+      opacity: 1;
+      background: var(--accent-blue);
+    }
+
+    .copy-code-btn:active,
+    .download-code-btn:active {
+      background: #1e3a8a;
+    }
+
+    .copy-code-btn.copied,
+    .download-code-btn.downloaded {
+      background: #10b981;
+      color: white;
+    }
+
+    .msg-content img {
+      max-width: 100%;
+      border-radius: 16px;
+      margin: 8px 0;
+    }
+
+    .timestamp {
+      font-size: 0.65rem;
+      opacity: 0.6;
+      position: absolute;
+      bottom: 6px;
+      right: 16px;
+    }
+
+    #inputArea {
+      padding: 12px 16px;
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+      background: transparent !important;
+      position: relative;
+    }
+
+    .ds-input-container {
+      background: #2b2d31;
+      border-radius: 24px;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      padding: 12px 16px;
+      gap: 12px;
+      border: 1px solid #3f3f3f;
+    }
+
+    body.light-theme .ds-input-container {
+      background: #f4f4f4;
+      border: 1px solid #e0e0e0;
+    }
+
+    #input {
+      background: transparent !important;
+      background-color: transparent !important;
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+      color: var(--text-light);
+      font-size: 1.05rem;
+      width: 100%;
+      font-family: inherit;
+      resize: none;
+      min-height: 24px;
+      -webkit-appearance: none;
+      appearance: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    #input::placeholder {
+      color: #888;
+    }
+
+    .ds-action-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .ds-action-left {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    #fileBadge {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: rgba(64, 156, 255, 0.15);
+      border: 1px solid rgba(64, 156, 255, 0.3);
+      border-radius: 12px;
+      color: #409cff;
+      font-weight: 500;
+      font-size: 0.9rem;
+      width: fit-content;
+      margin-bottom: 8px;
+    }
+
+    body.light-theme #fileBadge {
+      background: rgba(0, 122, 255, 0.1);
+      border-color: rgba(0, 122, 255, 0.2);
+      color: #007aff;
+    }
+
+    #removeFileBtn {
+      background: none;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      opacity: 0.7;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #removeFileBtn:hover {
+      opacity: 1;
+    }
+
+    .attached-file-card {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      background: rgba(64, 156, 255, 0.1);
+      border: 1px solid rgba(64, 156, 255, 0.2);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      font-weight: 500;
+      color: var(--accent-blue);
+    }
+
+    .ds-pill-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: transparent;
+      border: 1px solid #4a4a4a;
+      color: var(--text-light);
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    body.light-theme .ds-pill-btn {
+      border: 1px solid #ccc;
+    }
+
+    .ds-pill-btn.active {
+      background: rgba(64, 156, 255, 0.1);
+      border-color: #409cff;
+      color: #409cff;
+    }
+
+    body.light-theme .ds-pill-btn.active {
+      background: rgba(0, 122, 255, 0.1);
+      border-color: #007aff;
+      color: #007aff;
+    }
+
+    .ds-action-right {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .ds-icon-btn {
+      background: transparent;
+      border: none;
+      color: #888;
+      font-size: 1.25rem;
+      cursor: pointer;
+      opacity: 0.8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #sendBtn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #3b508f;
+      color: #bcccf2;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 1rem;
+    }
+
+    body.light-theme #sendBtn {
+      background: #b1c6f4;
+      color: #ffffff;
+    }
+
+    #sendBtn.ready {
+      background: #409cff;
+      color: #ffffff;
+    }
+
+    body.light-theme #sendBtn.ready {
+      background: #007aff;
+    }
+
+    #sendBtn:hover {
+      opacity: 0.9;
+    }
+
+    #sendBtn:active {
+      transform: scale(0.92);
+    }
+
+    #sendBtn:disabled {
+      opacity: 0.6;
+    }
+
+    .msg.bot.streaming {
+      opacity: 0.9;
+      border-left: 4px solid var(--green);
+    }
+
+    #chat::-webkit-scrollbar,
+    .chat-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #chat::-webkit-scrollbar-thumb,
+    .chat-list::-webkit-scrollbar-thumb {
+      background: var(--accent-blue);
+      border-radius: 10px;
+    }
+
+    button,
+    .chat-item,
+    .delete-chat {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ===== LOGIN PAGE ===== */
+    .login-wrapper {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100dvh;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      transition: opacity 0.3s;
+    }
+
+    .login-wrapper.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .login-box {
+      background: #0a0a0a;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 40px 30px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      text-align: center;
+    }
+
+    .login-box h2 {
+      color: var(--text-light);
+      font-weight: 600;
+      font-size: 1.8rem;
+    }
+
+    .login-box p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-top: -10px;
+    }
+
+    .login-input {
+      width: 100%;
+      padding: 14px 18px;
+      font-size: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      background: #111;
+      color: white;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .login-input:focus {
+      border-color: var(--accent-blue);
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      background: var(--text-light);
+      color: #000;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .login-btn:hover {
+      background: #c0c0c0;
+    }
+
+    /* ===== PROFILE & SIDEBAR ===== */
+    .sidebar-footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .profile-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: transparent;
+      border: none;
+      color: var(--text-light);
+      padding: 10px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+      text-align: left;
+    }
+
+    .profile-btn:hover {
+      background: #111;
+    }
+
+    .profile-avatar {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #e0e0e0, #808080);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000;
+      font-weight: bold;
+      font-size: 1rem;
+    }
+
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .profile-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .profile-id {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .logout-btn {
+      margin-top: 10px;
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      border: 1px solid #ff4444;
+      color: #ff4444;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .logout-btn:hover {
+      background: #ff4444;
+      color: white;
+    }
+
+    body.light-theme .modal-input {
+      background: #ffffff;
+    }
+
+    input:checked+.slider {
+      background-color: var(--accent-blue);
+    }
+
+    input:checked+.slider .slider-ball {
+      transform: translateX(26px);
+    }
+
+    .profile-page-scroll {
+      flex: 1;
+      padding: 85px 24px 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .profile-page-content {
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .modal-field {
+      margin-bottom: 16px;
+    }
+
+    .modal-field label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .modal-input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--bg-dark);
+      color: var(--text-light);
+      font-size: 1rem;
+    }
+
+    body.light-theme .modal-input {
+      background: #ffffff;
+    }
+
+    .logout-btn {
+      margin-top: 10px;
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      border: 1px solid #ff4444;
+      color: #ff4444;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .logout-btn:hover {
+      background: #ff4444;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- LOGIN WRAPPER -->
+  <div class="login-wrapper hidden" id="loginWrapper">
+    <div class="login-box">
+      <h2>Welcome Back</h2>
+      <p>Sign in to access Shark</p>
+      <input type="text" id="loginId" class="login-input" placeholder="User ID">
+      <input type="text" id="loginName" class="login-input" placeholder="Name">
+      <input type="password" id="loginPassword" class="login-input" placeholder="Password">
+      <input type="password" id="loginApi" class="login-input" placeholder="OpenRouter API Key">
+      <button class="login-btn" id="loginSubmitBtn">Sign In</button>
+    </div>
+  </div>
+
+  <!-- PPT TEMPLATE PICKER MODAL -->
+  <div id="pptModal"
+    style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.85); align-items:center; justify-content:center;">
+    <div
+      style="background:#1a1a1a; border-radius:20px; max-width:520px; width:92%; max-height:85vh; overflow-y:auto; padding:28px 24px; border:1px solid #333;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2 style="color:#fff; font-size:1.3rem; margin:0;"><i class="fas fa-file-powerpoint"
+            style="color:#ff6d3f; margin-right:8px;"></i>Create Presentation</h2>
+        <button id="pptModalClose"
+          style="background:none; border:none; color:#888; font-size:1.4rem; cursor:pointer;"><i
+            class="fas fa-times"></i></button>
+      </div>
+      <p style="color:#888; font-size:0.9rem; margin-bottom:16px;">Choose a template style:</p>
+      <div id="pptTemplateGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
+        <!-- Filled by JS -->
+      </div>
+      <input id="pptTopicInput" placeholder="Enter presentation topic..."
+        style="width:100%; padding:12px 16px; border-radius:12px; border:1px solid #444; background:#111; color:#fff; font-size:1rem; margin-bottom:12px; outline:none;">
+      <div style="display:flex; justify-content:space-between; gap:10px;">
+        <div style="flex:1; display:flex; gap:8px; align-items:center;">
+          <input id="pptSlideCount" type="number" min="3" max="20" value="6"
+            style="width:70px; padding:10px; border-radius:12px; border:1px solid #444; background:#111; color:#fff; text-align:center; font-size:1rem; outline:none;">
+          <span style="color:#888; font-size:0.9rem;">slides</span>
+        </div>
+        <button id="pptGenerateBtn"
+          style="flex:2; padding:14px; background:linear-gradient(135deg,#ff6d3f,#ff3c7d); color:#fff; border:none; border-radius:14px; font-size:1.05rem; font-weight:600; cursor:pointer; transition:0.2s;">🚀
+          Generate</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PPT LIVE PREVIEW OVERLAY -->
+  <div id="pptLivePreview"
+    style="display:none; position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,0.92); flex-direction:column; align-items:center; padding:20px;">
+    <div
+      style="display:flex; justify-content:space-between; align-items:center; width:100%; max-width:720px; margin-bottom:16px;">
+      <h3 id="pptLiveStatus" style="color:#56b4ff; font-size:1.1rem; margin:0;"><i class="fas fa-spinner fa-spin"></i>
+        Generating slides...</h3>
+      <button id="pptLiveClose"
+        style="background:none; border:none; color:#cfcfcf; font-size:1.6rem; cursor:pointer; display:none;"><i
+          class="fas fa-times"></i></button>
+    </div>
+    <div id="pptLiveSlides"
+      style="flex:1; width:100%; max-width:720px; overflow-y:auto; display:flex; flex-direction:column; gap:16px; padding-bottom:20px;">
+      <!-- Live slides injected here -->
+    </div>
+    <button id="pptDownloadBtn"
+      style="display:none; padding:14px 32px; background:linear-gradient(135deg,#00c853,#00e676); color:#fff; border:none; border-radius:14px; font-size:1.05rem; font-weight:600; cursor:pointer; margin-top:12px; margin-bottom: 20px;"><i
+        class="fas fa-download"></i> Download PPTX Document</button>
+  </div>
+
+  <div class="container" id="appContainer" style="display: none;">
+    <!-- Overlay for mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+      <header style="display: flex; justify-content: space-between; align-items: center; padding-right: 16px;">
+        <div style="display: flex; align-items: center; gap: 8px; color: var(--text-light);">
+          <i class="fas fa-comments"></i>
+          <span style="font-weight: 800;">Chats</span>
+        </div>
+        <button id="ttsAutoToggleBtn"
+          style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; touch-action: manipulation;"
+          title="Auto-read: OFF">
+          <i class="fas fa-volume-mute" id="ttsAutoIcon"></i>
+        </button>
+      </header>
+      <button id="newChatBtn">
+        <i class="fas fa-plus-circle"></i> New Chat
+      </button>
+      <div class="chat-list" id="chatList"></div>
+      <div class="sidebar-footer">
+        <button class="profile-btn" id="openProfileBtn">
+          <div class="profile-avatar"><span id="avatarInitials">U</span></div>
+          <div class="profile-info">
+            <span class="profile-name" id="sidebarName">User Info</span>
+            <span class="profile-id" id="sidebarId">ID: loading</span>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- MAIN CHAT AREA -->
+    <div class="main" id="chatMain">
+      <div class="chat-header">
+        <!-- Left side: menu button + logo + title -->
+        <div class="header-left">
+          <button class="menu-toggle" id="menuToggle" aria-label="Toggle sidebar">
+            <div class="custom-hamburger">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </button>
+
+          <div class="logo-icon">
+            <i class="fas fa-anchor"></i>
+          </div>
+          <span class="header-title">SHARK</span>
+        </div>
+
+        <!-- Right side: new chat button -->
+        <div class="header-right">
+          <button class="menu-toggle" id="headerNewChatBtn" aria-label="New chat"
+            style="display: flex; align-items: center; justify-content: center; background: transparent; border: none; color: inherit; cursor: pointer; padding: 4px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path>
+              <line x1="12" y1="8" x2="12" y2="16"></line>
+              <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div id="chat"></div>
+      <div id="inputArea">
+        <div class="ds-input-container">
+          <div id="fileBadge">
+            <i class="fas fa-file-alt"></i>
+            <span id="fileBadgeName">filename.pdf</span>
+            <button id="removeFileBtn"><i class="fas fa-times"></i></button>
+          </div>
+          <input id="input" placeholder="Message Shark" autofocus autocomplete="off">
+          <div class="ds-action-row">
+            <div class="ds-action-left">
+              <button id="deepThinkToggleBtn" class="ds-pill-btn">
+                <i class="fas fa-atom"></i> Deepdive
+              </button>
+              <button id="searchToggleBtn" class="ds-pill-btn">
+                <i class="fas fa-globe"></i> Search
+              </button>
+              <button id="pptOpenBtn" class="ds-pill-btn" style="color: #ff6d3f;">
+                <i class="fas fa-file-powerpoint"></i> PPT
+              </button>
+            </div>
+            <div class="ds-action-right">
+              <input type="file" id="fileAttachment" style="display: none;"
+                accept=".txt,.json,.py,.js,.html,.css,.csv,.pdf,.docx,.ppt,.pptx,.md">
+              <button class="ds-icon-btn" id="attachBtn" aria-label="Attach"><i class="fas fa-paperclip"></i></button>
+              <button id="sendBtn"><i class="fas fa-arrow-up"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE PAGE AREA -->
+    <div class="main" id="profilePage" style="display: none; flex-direction: column;">
+      <div class="chat-header">
+        <div class="header-left">
+          <button class="menu-toggle" id="closeProfileBtn" aria-label="Back" style="display: flex;">
+            <i class="fas fa-arrow-left"></i>
+          </button>
+          <div class="logo-icon"><i class="fas fa-user-circle"></i></div>
+          <span class="header-title">PROFILE</span>
+        </div>
+        <div class="header-right"></div>
+      </div>
+
+      <div class="profile-page-scroll">
+        <div class="profile-page-content">
+          <div class="modal-field"
+            style="display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border-color); padding: 16px; border-radius: 12px; margin-bottom: 24px;">
+            <span style="font-weight: 600; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-moon"></i> Dark Theme
+            </span>
+            <label class="theme-switch" style="position: relative; display: inline-block; width: 50px; height: 24px;">
+              <input type="checkbox" id="themeToggle" style="opacity: 0; width: 0; height: 0;">
+              <span class="slider round"
+                style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px;">
+                <span class="slider-ball"
+                  style="position: absolute; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;"></span>
+              </span>
+            </label>
+            <span style="font-weight: 600; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-sun"></i> Light Theme
+            </span>
+          </div>
+
+          <div class="modal-field">
+            <label>Name</label>
+            <input type="text" class="modal-input" id="profileName" disabled>
+          </div>
+          <div class="modal-field">
+            <label>User ID</label>
+            <input type="text" class="modal-input" id="profileId" disabled>
+          </div>
+          <div class="modal-field">
+            <label>API Key</label>
+            <input type="password" class="modal-input" id="profileApi">
+          </div>
+          <button class="logout-btn" id="logoutBtn" style="margin-top: 20px;">Log out</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (async function () {
+      // --- CONFIG ---
+      let API_KEY = ""; // Now set dynamically from login
+      const MODEL = "arcee-ai/trinity-large-preview:free";
+
+      // --- STATE ---
+      let currentUser = null;
+      let chats = [];
+      let currentChatId = null;
+      let streamingMsgDiv = null;
+      let isStreaming = false;
+      let isAnsweringFile = false;
+
+      // --- TTS SETUP ---
+      let ttsAutoEnabled = false;
+      const ttsAutoBtn = document.getElementById('ttsAutoToggleBtn');
+      const ttsAutoIcon = document.getElementById('ttsAutoIcon');
+
+      ttsAutoBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        ttsAutoEnabled = !ttsAutoEnabled;
+        if (ttsAutoEnabled) {
+          ttsAutoIcon.className = "fas fa-volume-up";
+          ttsAutoBtn.title = "Auto-read: ON";
+          ttsAutoIcon.style.color = "var(--text-light)";
+        } else {
+          ttsAutoIcon.className = "fas fa-volume-mute";
+          ttsAutoBtn.title = "Auto-read: OFF";
+          ttsAutoIcon.style.color = "inherit";
+          if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        }
+      });
+
+      function playRecord(text) {
+        if (!('speechSynthesis' in window)) return;
+        window.speechSynthesis.cancel();
+
+        // Remove markdown visual artifacts from the speech output
+        const cleanText = text.replace(/[*_#`]/g, '').replace(/!\[.*?\]\(.*?\)/g, '');
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        utterance.rate = 1.35; // increased TTS speed
+        window.speechSynthesis.speak(utterance);
+      }
+
+      // --- WEB SEARCH TOGGLE ---
+      let webSearchActive = false;
+      const searchToggleBtn = document.getElementById('searchToggleBtn');
+      searchToggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        webSearchActive = !webSearchActive;
+        if (webSearchActive) {
+          searchToggleBtn.classList.add('active');
+        } else {
+          searchToggleBtn.classList.remove('active');
+        }
+      });
+
+      // --- DEEPDIVE TOGGLE ---
+      let deepdiveActive = false;
+      const deepThinkToggleBtn = document.getElementById('deepThinkToggleBtn');
+      deepThinkToggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deepdiveActive = !deepdiveActive;
+        if (deepdiveActive) {
+          deepThinkToggleBtn.classList.add('active');
+          deepThinkToggleBtn.style.color = 'var(--accent-blue)';
+          deepThinkToggleBtn.style.borderColor = 'var(--accent-blue)';
+        } else {
+          deepThinkToggleBtn.classList.remove('active');
+          deepThinkToggleBtn.style.color = '';
+          deepThinkToggleBtn.style.borderColor = '';
+        }
+      });
+
+      // --- FILE ATTACHMENT LOGIC ---
+      const attachBtn = document.getElementById('attachBtn');
+      const fileAttachment = document.getElementById('fileAttachment');
+      const fileBadge = document.getElementById('fileBadge');
+      const fileBadgeName = document.getElementById('fileBadgeName');
+      const removeFileBtn = document.getElementById('removeFileBtn');
+      let attachedFileContent = "";
+      let attachedFileName = "";
+
+      function clearAttachment() {
+        attachedFileName = "";
+        attachedFileContent = "";
+        fileAttachment.value = "";
+        fileBadge.style.display = "none";
+        document.getElementById("input").focus();
+        document.getElementById("sendBtn").classList.remove("ready");
+      }
+
+      attachBtn.addEventListener('click', () => fileAttachment.click());
+      removeFileBtn.addEventListener('click', clearAttachment);
+
+      fileAttachment.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        attachedFileName = file.name;
+        fileBadgeName.textContent = file.name;
+        fileBadge.style.display = "flex";
+        document.getElementById("sendBtn").classList.add("ready"); // Light up send btn
+
+        const ext = file.name.split('.').pop().toLowerCase();
+        fileBadgeName.textContent = `Extracting ${ext.toUpperCase()}...`;
+
+        try {
+          if (ext === 'pdf') {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+            let text = '';
+            for (let i = 1; i <= pdf.numPages; i++) {
+              const page = await pdf.getPage(i);
+              const content = await page.getTextContent();
+              text += content.items.map(item => item.str).join(' ') + '\n';
+            }
+            attachedFileContent = text;
+          } else if (ext === 'docx') {
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+            attachedFileContent = result.value;
+          } else if (ext === 'pptx' || ext === 'ppt') {
+            const arrayBuffer = await file.arrayBuffer();
+            const zip = await JSZip.loadAsync(arrayBuffer);
+            let text = '';
+            for (const relativePath in zip.files) {
+              if (/ppt\/slides\/slide\d+\.xml/.test(relativePath)) {
+                const xml = await zip.files[relativePath].async("text");
+                const matches = xml.match(/<a:t.*?>(.*?)<\/a:t>/g);
+                if (matches) {
+                  text += matches.map(m => m.replace(/<[^>]+>/g, '')).join(' ') + '\n';
+                }
+              }
+            }
+            attachedFileContent = text;
+          } else {
+            attachedFileContent = await file.text();
+          }
+          fileBadgeName.textContent = file.name;
+        } catch (err) {
+          alert('Error reading file natively: ' + err.message);
+          clearAttachment();
+        }
+      });
+
+      // DOM elements
+      const sidebar = document.getElementById('sidebar');
+      const menuToggle = document.getElementById('menuToggle');
+      const overlay = document.getElementById('sidebarOverlay');
+
+      // --- SIDEBAR TOGGLE (mobile) ---
+      function openSidebar() {
+        sidebar.classList.add('open');
+        overlay.classList.add('visible');
+      }
+
+      function closeSidebar() {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('visible');
+      }
+
+      menuToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (sidebar.classList.contains('open')) {
+          closeSidebar();
+        } else {
+          openSidebar();
+        }
+      });
+
+      overlay.addEventListener('click', closeSidebar);
+
+      window.addEventListener('resize', () => {
+        if (window.innerWidth > 640) {
+          closeSidebar();
+        }
+      });
+
+      // --- UTILS ---
+      function getTimestamp() {
+        const d = new Date();
+        return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+      }
+
+      async function persistChats() {
+        localStorage.setItem("chats", JSON.stringify(chats));
+      }
+
+      async function generateTitleWithAI(userMessage, chatId) {
+        try {
+          const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Authorization": "Bearer " + API_KEY,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              model: MODEL,
+              messages: [
+                {
+                  role: "system",
+                  content: "You are a chat title generator. Given the user's first message, generate a SHORT, CLEAR, and DESCRIPTIVE chat title (max 5 words). Return ONLY the title itself — no quotes, no punctuation at the end, no explanation, no markdown."
+                },
+                {
+                  role: "user",
+                  content: userMessage.slice(0, 300) // only first 300 chars needed
+                }
+              ],
+              max_tokens: 15,
+              stream: false
+            })
+          });
+          if (!response.ok) throw new Error('title api error');
+          const data = await response.json();
+          let title = data.choices?.[0]?.message?.content?.trim() || "";
+          // Clean up any stray quotes or markdown
+          title = title.replace(/^["'`#*]+|["'`#*]+$/g, '').trim();
+          if (title.length > 40) title = title.substring(0, 37) + '…';
+          if (!title) throw new Error('empty title');
+          return title;
+        } catch (e) {
+          // Fallback to simple truncation
+          let t = userMessage.trim().split('\n')[0];
+          if (t.length > 35) t = t.substring(0, 32) + '…';
+          return t || "New Chat";
+        }
+      }
+
+      // --- COPY/DOWNLOAD BUTTONS ---
+      function attachCopyButtons(container) {
+        container.querySelectorAll('pre code').forEach((codeBlock) => {
+          const pre = codeBlock.parentNode;
+          if (pre.querySelector('.copy-code-btn')) return;
+
+          const langClass = Array.from(codeBlock.classList).find(c => c.startsWith('language-'));
+          let langName = "Code";
+          let fileExtension = "txt";
+          if (langClass) {
+            langName = langClass.replace('language-', '');
+            // Simple mapping for extensions
+            const extMap = {
+              'python': 'py', 'javascript': 'js', 'html': 'html', 'css': 'css',
+              'java': 'java', 'c': 'c', 'cpp': 'cpp', 'json': 'json', 'bash': 'sh', 'shell': 'sh',
+              'typescript': 'ts', 'react': 'jsx'
+            };
+            fileExtension = extMap[langName.toLowerCase()] || langName.toLowerCase();
+          }
+          const langLabel = document.createElement('div');
+          langLabel.className = 'code-lang-label';
+          langLabel.textContent = langName;
+
+          // Copy Button
+          const copyBtn = document.createElement('button');
+          copyBtn.className = 'copy-code-btn';
+          copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+          copyBtn.setAttribute('aria-label', 'Copy code');
+
+          copyBtn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const codeText = codeBlock.textContent || codeBlock.innerText;
+            try {
+              await navigator.clipboard.writeText(codeText);
+              copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+              copyBtn.classList.add('copied');
+              setTimeout(() => {
+                copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+                copyBtn.classList.remove('copied');
+              }, 2000);
+            } catch (err) {
+              copyBtn.innerHTML = '<i class="fas fa-times"></i>';
+              setTimeout(() => {
+                copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+              }, 2000);
+            }
+          });
+
+          // Download Button
+          const downloadBtn = document.createElement('button');
+          downloadBtn.className = 'download-code-btn';
+          downloadBtn.innerHTML = '<i class="fas fa-download"></i>';
+          downloadBtn.setAttribute('aria-label', 'Download code');
+
+          downloadBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const codeText = codeBlock.textContent || codeBlock.innerText;
+            try {
+              const blob = new Blob([codeText], { type: "text/plain" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `shark_snippet.${fileExtension}`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+
+              downloadBtn.innerHTML = '<i class="fas fa-check"></i>';
+              downloadBtn.classList.add('downloaded');
+              setTimeout(() => {
+                downloadBtn.innerHTML = '<i class="fas fa-download"></i>';
+                downloadBtn.classList.remove('downloaded');
+              }, 2000);
+            } catch (e) { }
+          });
+
+          pre.style.position = 'relative';
+          pre.insertBefore(langLabel, codeBlock);
+          pre.appendChild(downloadBtn);
+          pre.appendChild(copyBtn);
+        });
+      }
+
+      // --- RENDER MARKDOWN ---
+      function renderMarkdownToElement(content, container) {
+        const rawHtml = marked.parse(content, { mangle: false, headerIds: false });
+        container.innerHTML = rawHtml;
+        container.querySelectorAll('pre code').forEach((block) => {
+          hljs.highlightElement(block);
+        });
+        attachCopyButtons(container);
+      }
+
+      // --- PDF DOWNLOAD HOOK ---
+      window.downloadAsPdf = async function(btn) {
+         if (!window.html2pdf) {
+            alert('PDF engine is still loading...');
+            return;
+         }
+         const originalHtml = btn.innerHTML;
+         btn.disabled = true;
+         btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Converting to PDF...`;
+         
+         const msgContent = btn.closest('.msg-content');
+         const wrapper = document.createElement('div');
+         wrapper.innerHTML = msgContent.innerHTML;
+         
+         wrapper.querySelectorAll('.pdf-prompt-box, .msg-actions, .copy-code-btn, .download-code-btn').forEach(p => p.remove());
+         
+         wrapper.style.color = '#000';
+         wrapper.style.background = '#fff';
+         wrapper.style.fontFamily = 'Arial, sans-serif';
+         wrapper.style.lineHeight = '1.6';
+         wrapper.style.padding = '30px';
+         
+         Array.from(wrapper.querySelectorAll('*')).forEach(el => {
+           el.style.color = '#000';
+           if(el.tagName === 'PRE') {
+             el.style.backgroundColor = '#f4f4f4';
+             el.style.padding = '15px';
+             el.style.borderRadius = '5px';
+             el.style.whiteSpace = 'pre-wrap';
+             el.style.border = '1px solid #ddd';
+           }
+         });
+         
+         const opt = {
+            margin:       10,
+            filename:     'SharkAI_Document_Analysis.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+         };
+         
+         document.body.appendChild(wrapper);
+         try { await html2pdf().set(opt).from(wrapper).save(); } catch(e) {}
+         document.body.removeChild(wrapper);
+         
+         btn.disabled = false;
+         btn.innerHTML = originalHtml;
+      };
+
+      // --- PERMANENT MESSAGE ---
+      function addPermanentMessage(role, content, displayContent = null, timestamp = null, showPdfPrompt = false) {
+        const chatContainer = document.getElementById("chat");
+        const emptyState = chatContainer.querySelector('.empty-state');
+        if (emptyState) {
+          emptyState.remove();
+        }
+
+        const wrapperDiv = document.createElement("div");
+        wrapperDiv.className = `msg-wrapper msg-wrapper-${role === 'user' ? 'user' : 'bot'}`;
+
+        const msgDiv = document.createElement("div");
+        msgDiv.className = `msg ${role}`;
+
+        const contentDiv = document.createElement("div");
+        contentDiv.className = "msg-content";
+        renderMarkdownToElement(displayContent || content, contentDiv);
+        
+        if (role === 'assistant' && showPdfPrompt) {
+            const pdfPromptDiv = document.createElement('div');
+            pdfPromptDiv.className = 'pdf-prompt-box';
+            pdfPromptDiv.style.cssText = "margin-top:15px; padding:15px; border-radius:12px; background:var(--green); border:1px solid #333;";
+            pdfPromptDiv.innerHTML = `
+              <p style="margin-bottom:10px; font-weight:bold; color:var(--text-light); font-size:0.95rem;"><i class="fas fa-file-pdf" style="color:#ff4b2b;"></i> Would you like to generate a PDF of this analysis?</p>
+              <button class="pdf-download-btn" onclick="window.downloadAsPdf(this)" style="padding:10px 20px; background:linear-gradient(135deg,#ff4b2b,#ff416c); color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.9rem;"><i class="fas fa-download"></i> Convert AI Response to PDF</button>
+            `;
+            contentDiv.appendChild(pdfPromptDiv);
+        }
+        
+        msgDiv.appendChild(contentDiv);
+
+        const ts = document.createElement("div");
+        ts.className = "timestamp";
+        ts.textContent = timestamp || getTimestamp();
+        msgDiv.appendChild(ts);
+
+        // Action Buttons
+        const actionsDiv = document.createElement("div");
+        actionsDiv.className = "msg-actions";
+
+        let newMsgObj = null;
+
+        if (role === "user") {
+          const userActionsMenu = document.createElement("div");
+          userActionsMenu.className = "dropdown-menu";
+          userActionsMenu.style.top = "auto";
+          userActionsMenu.style.bottom = "calc(100% + 5px)";
+          userActionsMenu.style.right = "0";
+
+          const editBtn = document.createElement("button");
+          editBtn.className = "dropdown-item";
+          editBtn.innerHTML = '<i class="fas fa-edit"></i> Edit';
+          editBtn.onclick = (e) => {
+            e.stopPropagation();
+            userActionsMenu.classList.remove("show");
+            document.getElementById("input").value = displayContent || content;
+            document.getElementById("input").focus();
+            if (newMsgObj && currentChatId) {
+              const currentChat = chats.find(c => c.id === currentChatId);
+              const idx = currentChat.messages.indexOf(newMsgObj);
+              if (idx !== -1) {
+                currentChat.messages = currentChat.messages.slice(0, idx);
+                persistChats();
+                loadChat(currentChatId);
+              }
+            }
+          };
+
+          const copyBtn = document.createElement("button");
+          copyBtn.className = "dropdown-item";
+          copyBtn.innerHTML = '<i class="far fa-copy"></i> Copy';
+          copyBtn.onclick = async (e) => {
+            e.stopPropagation();
+            userActionsMenu.classList.remove("show");
+            try { await navigator.clipboard.writeText(content); } catch (err) { }
+          };
+
+          userActionsMenu.appendChild(editBtn);
+          userActionsMenu.appendChild(copyBtn);
+          msgDiv.appendChild(userActionsMenu);
+
+          msgDiv.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            document.querySelectorAll(".dropdown-menu").forEach(m => {
+              if (m !== userActionsMenu) m.classList.remove("show");
+            });
+            userActionsMenu.classList.toggle("show");
+          });
+
+        } else if (role === "assistant" && content !== "(empty response)") {
+          const likeBtn = document.createElement("button");
+          likeBtn.className = "msg-action-btn";
+          likeBtn.innerHTML = '<i class="far fa-thumbs-up"></i>';
+          likeBtn.onclick = () => {
+            likeBtn.style.color = likeBtn.style.color ? '' : 'var(--accent-blue)';
+            dislikeBtn.style.color = '';
+          };
+          actionsDiv.appendChild(likeBtn);
+
+          const dislikeBtn = document.createElement("button");
+          dislikeBtn.className = "msg-action-btn";
+          dislikeBtn.innerHTML = '<i class="far fa-thumbs-down"></i>';
+          dislikeBtn.onclick = () => {
+            dislikeBtn.style.color = dislikeBtn.style.color ? '' : '#ff4444';
+            likeBtn.style.color = '';
+          };
+          actionsDiv.appendChild(dislikeBtn);
+
+          const shareBtn = document.createElement("button");
+          shareBtn.className = "msg-action-btn";
+          shareBtn.innerHTML = '<i class="fas fa-share-alt"></i>';
+          shareBtn.onclick = async () => {
+            if (navigator.share) {
+              try {
+                await navigator.share({ text: content });
+              } catch (e) { }
+            } else {
+              alert("Share not supported softly on this device.");
+            }
+          };
+          actionsDiv.appendChild(shareBtn);
+
+          const copyBtn = document.createElement("button");
+          copyBtn.className = "msg-action-btn";
+          copyBtn.innerHTML = '<i class="far fa-copy"></i>';
+          copyBtn.onclick = async () => {
+            try {
+              await navigator.clipboard.writeText(content);
+              copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+              setTimeout(() => {
+                copyBtn.innerHTML = '<i class="far fa-copy"></i>';
+              }, 2000);
+            } catch (err) { }
+          };
+          actionsDiv.appendChild(copyBtn);
+
+          const readBtn = document.createElement("button");
+          readBtn.className = "msg-action-btn";
+          readBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+          readBtn.onclick = () => {
+            playRecord(content);
+          };
+          actionsDiv.appendChild(readBtn);
+
+          const dotsWrap = document.createElement("div");
+          dotsWrap.style.position = "relative";
+
+          const dotsBtn = document.createElement("button");
+          dotsBtn.className = "msg-action-btn";
+          dotsBtn.innerHTML = '<i class="fas fa-ellipsis-v"></i>';
+
+          const dropMenu = document.createElement("div");
+          dropMenu.className = "dropdown-menu";
+          const regenBtn = document.createElement("button");
+          regenBtn.className = "dropdown-item";
+          regenBtn.innerHTML = '<i class="fas fa-redo"></i> Regenerate';
+          regenBtn.onclick = (e) => {
+            e.stopPropagation();
+            dropMenu.classList.remove("show");
+            if (newMsgObj && currentChatId) {
+              const currentChat = chats.find(c => c.id === currentChatId);
+              const idx = currentChat.messages.indexOf(newMsgObj);
+              if (idx !== -1) {
+                currentChat.messages = currentChat.messages.slice(0, idx);
+                persistChats();
+                loadChat(currentChatId);
+                triggerApiCall(); // Assuming triggerApiCall exists and initiates a new API call
+              }
+            }
+          };
+          dropMenu.appendChild(regenBtn);
+
+          dotsBtn.onclick = (e) => {
+            e.stopPropagation();
+            document.querySelectorAll(".dropdown-menu").forEach(m => {
+              if (m !== dropMenu) m.classList.remove("show");
+            });
+            dropMenu.classList.toggle("show");
+          };
+
+          dotsWrap.appendChild(dotsBtn);
+          dotsWrap.appendChild(dropMenu);
+          actionsDiv.appendChild(dotsWrap);
+        }
+
+        wrapperDiv.appendChild(msgDiv);
+        if (actionsDiv.children.length > 0) {
+          wrapperDiv.appendChild(actionsDiv);
+        }
+
+        chatContainer.appendChild(wrapperDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        if (currentChatId) {
+          const chat = chats.find(c => c.id === currentChatId);
+          newMsgObj = { role, content, displayContent, timestamp: ts.textContent, showPdfPrompt };
+          chat.messages.push(newMsgObj);
+          persistChats();
+
+          if (role === 'user' && chat.title === "New Chat") {
+            // Immediately set a placeholder, then update with AI title
+            chat.title = "✦ Generating title...";
+            renderChatList();
+            persistChats();
+            generateTitleWithAI(content, chat.id).then(aiTitle => {
+              const targetChat = chats.find(c => c.id === chat.id);
+              if (targetChat) {
+                targetChat.title = aiTitle;
+                renderChatList();
+                persistChats();
+              }
+            });
+          }
+        }
+      }
+
+      // --- STREAMING ---
+      function escHtml(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function updateStreamingMessage(text, isShining = true) {
+        const chatContainer = document.getElementById("chat");
+        if (!streamingMsgDiv) {
+          const wrapperDiv = document.createElement("div");
+          wrapperDiv.className = "msg-wrapper msg-wrapper-bot";
+
+          streamingMsgDiv = document.createElement("div");
+          streamingMsgDiv.className = "msg bot streaming";
+
+          const contentDiv = document.createElement("div");
+          contentDiv.className = "msg-content";
+          streamingMsgDiv.appendChild(contentDiv);
+
+          const ts = document.createElement("div");
+          ts.className = "timestamp";
+          ts.textContent = getTimestamp();
+          streamingMsgDiv.appendChild(ts);
+
+          wrapperDiv.appendChild(streamingMsgDiv);
+          chatContainer.appendChild(wrapperDiv);
+        }
+
+        const contentDiv = streamingMsgDiv.querySelector('.msg-content');
+        if (contentDiv) {
+          if (isShining) {
+            // Status like "thinking..." — plain glowing text
+            contentDiv.innerHTML = `<span class="gen-shine">${escHtml(text)}</span>`;
+          } else {
+            // Live-render markdown so ###, **, bullets etc. convert in real-time
+            renderMarkdownToElement(text, contentDiv);
+
+            // After rendering, attach the blue shine to the very last text node
+            const walker = document.createTreeWalker(contentDiv, NodeFilter.SHOW_TEXT, null);
+            let lastTextNode = null;
+            while (walker.nextNode()) lastTextNode = walker.currentNode;
+
+            if (lastTextNode && lastTextNode.textContent.trim().length > 0) {
+              const SHINE_LEN = 6;
+              const raw = lastTextNode.textContent;
+              const parent = lastTextNode.parentNode;
+              if (raw.length <= SHINE_LEN) {
+                const shine = document.createElement('span');
+                shine.className = 'gen-shine';
+                shine.textContent = raw;
+                parent.replaceChild(shine, lastTextNode);
+              } else {
+                const normal = document.createTextNode(raw.slice(0, -SHINE_LEN));
+                const shine = document.createElement('span');
+                shine.className = 'gen-shine';
+                shine.textContent = raw.slice(-SHINE_LEN);
+                parent.replaceChild(shine, lastTextNode);
+                parent.insertBefore(normal, shine);
+              }
+            }
+          }
+        }
+
+        const ts = streamingMsgDiv.querySelector('.timestamp');
+        if (ts) ts.textContent = getTimestamp();
+
+        // Auto-scroll only if user is near bottom
+        const isNearBottom = chatContainer.scrollHeight - chatContainer.clientHeight <= chatContainer.scrollTop + 80;
+        if (isNearBottom) chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+
+      function removeStreamingDiv() {
+        if (streamingMsgDiv && streamingMsgDiv.parentNode) {
+          // Parent node is the wrapperDiv, remove it instead of just the inner streamingMsgDiv
+          streamingMsgDiv.parentNode.remove();
+          streamingMsgDiv = null;
+        }
+      }
+
+      // --- DELETE CHAT ---
+      function deleteChat(chatId, event) {
+        event.stopPropagation();
+        if (isStreaming) return;
+
+        const index = chats.findIndex(c => c.id === chatId);
+        if (index === -1) return;
+
+        chats.splice(index, 1);
+        persistChats();
+
+        if (chats.length === 0) {
+          const newChat = {
+            id: Date.now().toString(),
+            title: "New Chat",
+            messages: []
+          };
+          chats.push(newChat);
+          persistChats();
+          currentChatId = newChat.id;
+          loadChat(newChat.id);
+        } else {
+          if (currentChatId === chatId) {
+            currentChatId = chats[0].id;
+            loadChat(currentChatId);
+          } else {
+            renderChatList();
+          }
+        }
+      }
+
+      // --- LOAD CHAT ---
+      function loadChat(id) {
+        if (isStreaming) return;
+        const chat = chats.find(c => c.id === id);
+        if (!chat) return;
+        currentChatId = id;
+
+        const chatContainer = document.getElementById("chat");
+        chatContainer.innerHTML = '';
+
+        if (chat.messages.length === 0) {
+          chatContainer.innerHTML = `
+            <div class="empty-state" style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; height:100%; color:var(--text-muted); text-align:center;">
+              <i class="fas fa-anchor" style="font-size:3.5rem; color:var(--text-light); margin-bottom:20px; text-shadow:0 0 20px rgba(255,255,255,0.2);"></i>
+              <h3 style="font-size:1.6rem; color:var(--text-light); margin-bottom:10px;">I am Shark</h3>
+              <p style="margin-bottom:30px;">How can I help you today?</p>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; max-width:500px; padding:0 20px;">
+                <div class="ability-card" onclick="document.getElementById('input').value='Write a creative story'; document.getElementById('input').focus();" style="background:#111; border:1px solid #333; padding:16px; border-radius:12px; display:flex; flex-direction:column; align-items:center; gap:10px; color:var(--text-light); cursor:pointer;">
+                  <i class="fas fa-pen-nib" style="font-size:1.5rem; color:var(--accent-blue);"></i><span>Creative Writing</span>
+                </div>
+                <div class="ability-card" onclick="document.getElementById('input').value='Help me solve a math problem'; document.getElementById('input').focus();" style="background:#111; border:1px solid #333; padding:16px; border-radius:12px; display:flex; flex-direction:column; align-items:center; gap:10px; color:var(--text-light); cursor:pointer;">
+                  <i class="fas fa-brain" style="font-size:1.5rem; color:var(--accent-blue);"></i><span>Problem Solving</span>
+                </div>
+                <div class="ability-card" onclick="document.getElementById('input').value='How to build an app in JS?'; document.getElementById('input').focus();" style="background:#111; border:1px solid #333; padding:16px; border-radius:12px; display:flex; flex-direction:column; align-items:center; gap:10px; color:var(--text-light); cursor:pointer;">
+                  <i class="fas fa-code" style="font-size:1.5rem; color:var(--accent-blue);"></i><span>Code Generation</span>
+                </div>
+                <div class="ability-card" onclick="document.getElementById('input').value='Summarize the latest trends'; document.getElementById('input').focus();" style="background:#111; border:1px solid #333; padding:16px; border-radius:12px; display:flex; flex-direction:column; align-items:center; gap:10px; color:var(--text-light); cursor:pointer;">
+                  <i class="fas fa-bolt" style="font-size:1.5rem; color:var(--accent-blue);"></i><span>Fast Responses</span>
+                </div>
+              </div>
+            </div>
+          `;
+          const emptyStateElement = chatContainer.querySelector('.empty-state');
+          emptyStateElement.querySelectorAll('.ability-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+              card.style.background = '#1a1a1a';
+              card.style.borderColor = 'var(--accent-blue)';
+              card.style.transform = 'translateY(-2px)';
+            });
+            card.addEventListener('mouseleave', () => {
+              card.style.background = '#111';
+              card.style.borderColor = '#333';
+              card.style.transform = 'none';
+            });
+          });
+        }
+
+        chat.messages.forEach(msg => {
+          const wrapperDiv = document.createElement("div");
+          wrapperDiv.className = `msg-wrapper msg-wrapper-${msg.role === 'user' ? 'user' : 'bot'}`;
+
+          const msgDiv = document.createElement("div");
+          msgDiv.className = `msg ${msg.role}`;
+
+          const contentDiv = document.createElement("div");
+          contentDiv.className = "msg-content";
+          if (msg.isHtml) {
+            contentDiv.innerHTML = msg.displayContent || msg.content;
+            if (msg.pptData) {
+              const btn = contentDiv.querySelector('.ppt-download-btn');
+              if (btn) btn.onclick = () => downloadPPTX(msg.pptData.slidesData, msg.pptData.tpl, msg.pptData.topic, btn);
+            }
+          } else {
+            renderMarkdownToElement(msg.displayContent || msg.content, contentDiv);
+            if (msg.role === 'assistant' && msg.showPdfPrompt) {
+                const pdfPromptDiv = document.createElement('div');
+                pdfPromptDiv.className = 'pdf-prompt-box';
+                pdfPromptDiv.style.cssText = "margin-top:15px; padding:15px; border-radius:12px; background:var(--green); border:1px solid #333;";
+                pdfPromptDiv.innerHTML = `
+                  <p style="margin-bottom:10px; font-weight:bold; color:var(--text-light); font-size:0.95rem;"><i class="fas fa-file-pdf" style="color:#ff4b2b;"></i> Would you like to generate a PDF of this analysis?</p>
+                  <button class="pdf-download-btn" onclick="window.downloadAsPdf(this)" style="padding:10px 20px; background:linear-gradient(135deg,#ff4b2b,#ff416c); color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.9rem;"><i class="fas fa-download"></i> Convert AI Response to PDF</button>
+                `;
+                contentDiv.appendChild(pdfPromptDiv);
+            }
+          }
+          msgDiv.appendChild(contentDiv);
+
+          const ts = document.createElement("div");
+          ts.className = "timestamp";
+          ts.textContent = msg.timestamp || getTimestamp();
+          msgDiv.appendChild(ts);
+
+          // Action Buttons
+          const actionsDiv = document.createElement("div");
+          actionsDiv.className = "msg-actions";
+
+          if (msg.role === "user") {
+            const userActionsMenu = document.createElement("div");
+            userActionsMenu.className = "dropdown-menu";
+            userActionsMenu.style.top = "auto";
+            userActionsMenu.style.bottom = "calc(100% + 5px)";
+            userActionsMenu.style.right = "0";
+
+            const editBtn = document.createElement("button");
+            editBtn.className = "dropdown-item";
+            editBtn.innerHTML = '<i class="fas fa-edit"></i> Edit';
+            editBtn.onclick = (e) => {
+              e.stopPropagation();
+              userActionsMenu.classList.remove("show");
+              document.getElementById("input").value = msg.displayContent || msg.content;
+              document.getElementById("input").focus();
+              const idx = chat.messages.indexOf(msg);
+              if (idx !== -1) {
+                chat.messages = chat.messages.slice(0, idx);
+                persistChats();
+                loadChat(currentChatId);
+              }
+            };
+
+            const copyBtn = document.createElement("button");
+            copyBtn.className = "dropdown-item";
+            copyBtn.innerHTML = '<i class="far fa-copy"></i> Copy';
+            copyBtn.onclick = async (e) => {
+              e.stopPropagation();
+              userActionsMenu.classList.remove("show");
+              try { await navigator.clipboard.writeText(msg.content); } catch (err) { }
+            };
+
+            userActionsMenu.appendChild(editBtn);
+            userActionsMenu.appendChild(copyBtn);
+            msgDiv.appendChild(userActionsMenu);
+
+            msgDiv.addEventListener("contextmenu", (e) => {
+              e.preventDefault();
+              document.querySelectorAll(".dropdown-menu").forEach(m => {
+                if (m !== userActionsMenu) m.classList.remove("show");
+              });
+              userActionsMenu.classList.toggle("show");
+            });
+
+          } else if (msg.role === "assistant" && msg.content !== "(empty response)") {
+            const likeBtn = document.createElement("button");
+            likeBtn.className = "msg-action-btn";
+            likeBtn.innerHTML = '<i class="far fa-thumbs-up"></i>';
+            likeBtn.onclick = () => {
+              likeBtn.style.color = likeBtn.style.color ? '' : 'var(--accent-blue)';
+              dislikeBtn.style.color = '';
+            };
+            actionsDiv.appendChild(likeBtn);
+
+            const dislikeBtn = document.createElement("button");
+            dislikeBtn.className = "msg-action-btn";
+            dislikeBtn.innerHTML = '<i class="far fa-thumbs-down"></i>';
+            dislikeBtn.onclick = () => {
+              dislikeBtn.style.color = dislikeBtn.style.color ? '' : '#ff4444';
+              likeBtn.style.color = '';
+            };
+            actionsDiv.appendChild(dislikeBtn);
+
+            const shareBtn = document.createElement("button");
+            shareBtn.className = "msg-action-btn";
+            shareBtn.innerHTML = '<i class="fas fa-share-alt"></i>';
+            shareBtn.onclick = async () => {
+              if (navigator.share) {
+                try {
+                  await navigator.share({ text: msg.content });
+                } catch (e) { }
+              } else {
+                alert("Share not supported softly on this device.");
+              }
+            };
+            actionsDiv.appendChild(shareBtn);
+
+            const copyBtn = document.createElement("button");
+            copyBtn.className = "msg-action-btn";
+            copyBtn.innerHTML = '<i class="far fa-copy"></i>';
+            copyBtn.onclick = async () => {
+              try {
+                await navigator.clipboard.writeText(msg.content);
+                copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                  copyBtn.innerHTML = '<i class="far fa-copy"></i>';
+                }, 2000);
+              } catch (err) { }
+            };
+            actionsDiv.appendChild(copyBtn);
+
+            const dotsWrap = document.createElement("div");
+            dotsWrap.style.position = "relative";
+
+            const dotsBtn = document.createElement("button");
+            dotsBtn.className = "msg-action-btn";
+            dotsBtn.innerHTML = '<i class="fas fa-ellipsis-v"></i>';
+
+            const dropMenu = document.createElement("div");
+            dropMenu.className = "dropdown-menu";
+            const regenBtn = document.createElement("button");
+            regenBtn.className = "dropdown-item";
+            regenBtn.innerHTML = '<i class="fas fa-redo"></i> Regenerate';
+            regenBtn.onclick = (e) => {
+              e.stopPropagation();
+              dropMenu.classList.remove("show");
+              const idx = chat.messages.indexOf(msg);
+              if (idx !== -1) {
+                chat.messages = chat.messages.slice(0, idx); // Keep messages before this assistant response
+                persistChats();
+                loadChat(currentChatId);
+                triggerApiCall(); // Fire API without adding a new user message
+              }
+            };
+            dropMenu.appendChild(regenBtn);
+
+            dotsBtn.onclick = (e) => {
+              e.stopPropagation();
+              document.querySelectorAll(".dropdown-menu").forEach(m => {
+                if (m !== dropMenu) m.classList.remove("show");
+              });
+              dropMenu.classList.toggle("show");
+            };
+
+            dotsWrap.appendChild(dotsBtn);
+            dotsWrap.appendChild(dropMenu);
+            actionsDiv.appendChild(dotsWrap);
+          }
+
+          wrapperDiv.appendChild(msgDiv);
+          if (actionsDiv.children.length > 0) {
+            wrapperDiv.appendChild(actionsDiv);
+          }
+
+          chatContainer.appendChild(wrapperDiv);
+        });
+
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        renderChatList();
+      }
+
+      // --- RENDER CHAT LIST (with delete dropdown) ---
+      function renderChatList() {
+        const listDiv = document.getElementById("chatList");
+        listDiv.innerHTML = "";
+        chats.forEach(chat => {
+          const item = document.createElement("div");
+          item.className = "chat-item" + (chat.id === currentChatId ? " active" : "");
+
+          const titleSpan = document.createElement("span");
+          titleSpan.className = "chat-title";
+          titleSpan.textContent = chat.title;
+          item.appendChild(titleSpan);
+
+          const dotsWrap = document.createElement("div");
+          dotsWrap.style.position = "relative";
+
+          const dotsBtn = document.createElement("span");
+          dotsBtn.className = "delete-chat";
+          dotsBtn.innerHTML = '<i class="fas fa-ellipsis-v"></i>';
+
+          const dropMenu = document.createElement("div");
+          dropMenu.className = "dropdown-menu";
+          dropMenu.style.right = "0";
+          dropMenu.style.bottom = "auto";
+          dropMenu.style.top = "100%";
+          const delBtn = document.createElement("button");
+          delBtn.className = "dropdown-item";
+          delBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Delete';
+          delBtn.style.color = "#ff4444";
+
+          delBtn.onclick = (e) => {
+            e.stopPropagation();
+            deleteChat(chat.id, e);
+          };
+          dropMenu.appendChild(delBtn);
+
+          dotsBtn.onclick = (e) => {
+            e.stopPropagation();
+            document.querySelectorAll(".dropdown-menu").forEach(m => {
+              if (m !== dropMenu) m.classList.remove("show");
+            });
+            dropMenu.classList.toggle("show");
+          };
+
+          dotsWrap.appendChild(dotsBtn);
+          dotsWrap.appendChild(dropMenu);
+          item.appendChild(dotsWrap);
+
+          item.onclick = (e) => {
+            if (!e.target.closest('.delete-chat') && !e.target.closest('.dropdown-menu')) {
+              loadChat(chat.id);
+              if (window.innerWidth <= 640) closeSidebar();
+            }
+          };
+
+          listDiv.appendChild(item);
+        });
+      }
+
+      // --- NEW CHAT ---
+      document.getElementById("newChatBtn").addEventListener("click", () => {
+        if (isStreaming) return;
+        const newChat = {
+          id: Date.now().toString(),
+          title: "New Chat",
+          messages: []
+        };
+        chats.push(newChat);
+        persistChats();
+        loadChat(newChat.id);
+        if (window.innerWidth <= 640) closeSidebar();
+      });
+
+      // --- API CALL ---
+      async function triggerApiCall() {
+        if (isStreaming || !currentChatId) return;
+        const currentChat = chats.find(c => c.id === currentChatId);
+        if (!currentChat || currentChat.messages.length === 0) return;
+
+        isStreaming = true;
+        document.getElementById("sendBtn").disabled = true;
+        const inputField = document.getElementById("input");
+        inputField.disabled = true;
+
+        // Persona identity enforcement — injected at the start of every system prompt
+        const PERSONA_LOCK = `IDENTITY RULES (ABSOLUTE — NEVER BREAK CHARACTER):
+- Your name is Shark. You are ALWAYS Shark. You were created by the Shark team.
+- You were built and designed by a student named Naveen Kumar. If asked who created or built you, say: "I was created by Naveen Kumar."
+- You are NOT Claude, NOT GPT, NOT Gemini, NOT LLaMA, NOT DeepSeek, NOT any other AI.
+- If ANYONE asks "what AI are you?", "who made you?", "what model are you?", "are you Claude?", or any similar question — you MUST answer: "I am Shark, a powerful AI assistant built by the Shark team and created by Naveen Kumar." NEVER reveal the underlying model or provider.
+- NEVER say "As an AI language model", NEVER say "As Claude", NEVER mention Anthropic, OpenAI, Google, Meta, or any AI company.
+- Always refer to yourself exclusively as Shark in first person.
+`;
+
+        const FORMATTING_RULES = `
+FORMATTING RULES (ALWAYS FOLLOW FOR EVERY RESPONSE):
+- Use Markdown formatting in all responses.
+- Structure all answers with clear ## Headings for major sections.
+- Use ### Sub-headings for sub-sections where applicable.
+- Use bullet points (- item) for lists of features, options, or items.
+- Use numbered lists (1. step) for sequential steps or procedures.
+- Use **bold** for key terms, important concepts, and emphasis.
+- Use \`inline code\` for variable names, file names, commands, and short code snippets.
+- Use triple-backtick code blocks with the correct language tag for all code examples.
+- Separate distinct sections with a blank line.
+- Keep paragraphs short and focused — one idea per paragraph.
+- For complex topics, always start with a brief summary, then elaborate in sections.
+`;
+
+        const deepdiveSystemPrompt = PERSONA_LOCK + FORMATTING_RULES + `\nYou are Shark in Deepdive mode — a hyper-analytical AI assistant. Before answering, you MUST think deeply step-by-step: consider edge cases, ambiguities, multiple approaches, and potential errors. Structure your final answer clearly with your reasoning visible. Be thorough, precise, and exhaustive. Use code blocks, numbered steps, headers, and lists for maximum clarity. Prioritize depth and completeness over brevity.`;
+        const normalSystemPrompt = PERSONA_LOCK + FORMATTING_RULES + `\nYou are Shark, a powerful AI assistant chatbot. You provide helpful, intelligent, and concise responses. If the user asks for a file, script, or something downloadable (e.g. '.html', '.py', etc.), simply write the raw code content properly inside a Markdown code block with the correct language tag. The frontend will automatically catch this and provide the user with a direct 'Download file' button. When the user asks to see an image or search the internet for something visual, you MUST attempt to find a REAL image URL from your search results and display it using standard Markdown format: \`![description](URL)\`. Do NOT use alternative AI image generation services. Only provide direct image URLs found via web search.`;
+
+        const messagesForApi = [
+          { role: "system", content: deepdiveActive ? deepdiveSystemPrompt : normalSystemPrompt },
+          ...currentChat.messages.map(m => ({ role: m.role, content: m.content }))
+        ];
+
+        let isReceivingTokens = false;
+        const statuses = deepdiveActive
+          ? ["Deepdiving...", "Analysing deeply...", "Thinking hard...", "Processing...", "Reasoning..."]
+          : ["thinking...", "thoughting...", "working...", "generating..."];
+        let statusIdx = 0;
+
+        const statusInterval = setInterval(() => {
+          if (!isReceivingTokens) {
+            updateStreamingMessage(statuses[statusIdx % statuses.length], true);
+            statusIdx++;
+          }
+        }, 600);
+        updateStreamingMessage(statuses[0], true);
+
+        const reqPayload = {
+          model: MODEL,
+          messages: messagesForApi,
+          stream: true
+        };
+
+        if (webSearchActive) {
+          reqPayload.plugins = [{ id: "web", max_results: 5 }];
+        }
+
+        try {
+          const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Authorization": "Bearer " + API_KEY,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(reqPayload)
+          });
+
+          if (!response.ok) throw new Error(`API error ${response.status}`);
+
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder("utf-8");
+          let assistantText = "";
+          let buffer = "";
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop() || "";
+
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (!trimmed || trimmed === "data: [DONE]") continue;
+              if (trimmed.startsWith("data: ")) {
+                const jsonStr = trimmed.slice(6);
+                try {
+                  const parsed = JSON.parse(jsonStr);
+                  const delta = parsed.choices?.[0]?.delta?.content;
+                  if (delta) {
+                    if (!isReceivingTokens) {
+                      isReceivingTokens = true;
+                      clearInterval(statusInterval);
+                      assistantText = "";
+                      updateStreamingMessage("", false, null); // completely clear previous "thinking..." status
+                    }
+                    assistantText += delta;
+                    updateStreamingMessage(assistantText, false, delta);
+                  }
+                } catch (e) { /* ignore */ }
+              }
+            }
+          }
+
+          removeStreamingDiv();
+          if (assistantText) {
+            addPermanentMessage("assistant", assistantText, null, null, isAnsweringFile);
+            isAnsweringFile = false;
+            if (ttsAutoEnabled) playRecord(assistantText);
+          } else {
+            addPermanentMessage("assistant", "(empty response)");
+          }
+
+        } catch (err) {
+          clearInterval(statusInterval);
+          removeStreamingDiv();
+          addPermanentMessage("assistant", `⚠️ Error: ${err.message}`);
+        } finally {
+          clearInterval(statusInterval);
+          isStreaming = false;
+          document.getElementById("sendBtn").disabled = false;
+          inputField.disabled = false;
+          inputField.focus();
+        }
+      }
+
+      // --- SEND MESSAGE ---
+      function sendMessage() {
+        const inputField = document.getElementById("input");
+        let text = inputField.value.trim();
+        if ((!text && !attachedFileName) || isStreaming) return;
+
+        // Auto-detect Presentation intent
+        const pptIntentRegex = /ppt|powerpoint|presentation|slide\sdeck|slides\b/i;
+        if (pptIntentRegex.test(text) && !attachedFileName) {
+          document.getElementById("pptTopicInput").value = text;
+          inputField.value = "";
+          document.getElementById("pptModal").style.display = 'flex';
+          return;
+        }
+
+        let displayMessage = text;
+        if (attachedFileName) {
+          isAnsweringFile = true;
+          const fileTag = `<div class="attached-file-card"><i class="fas fa-file-alt"></i> ${attachedFileName}</div>`;
+          if (text) displayMessage = `${fileTag}\n\n${text}`;
+          else displayMessage = `${fileTag}\n\nPlease analyze this document.`;
+
+          let contentToSend = attachedFileContent.trim() || "[Warning: The file extraction returned empty text. It might be a scanned image or an unsupported format.]";
+          text = `[SYSTEM NOTE: The user has attached a file named "${attachedFileName}". The exact text content of this file has been automatically extracted and is provided below. DO NOT tell the user you cannot read files. Read the text below and use it to answer the user's request.]\n\n=== BEGIN EXTACTED FILE CONTENT ===\n${contentToSend}\n=== END EXTRACTED FILE CONTENT ===\n\nUser Request: ${text || 'Please analyze this document and summarize its contents.'}`;
+        }
+
+        addPermanentMessage("user", text, displayMessage);
+
+        inputField.value = "";
+        clearAttachment();
+        triggerApiCall();
+      }
+
+      // --- EVENT LISTENERS ---
+      document.getElementById("sendBtn").addEventListener("click", sendMessage);
+      document.getElementById("input").addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+      document.getElementById("input").addEventListener("input", (e) => {
+        if (e.target.value.trim().length > 0) {
+          document.getElementById("sendBtn").classList.add("ready");
+        } else {
+          document.getElementById("sendBtn").classList.remove("ready");
+        }
+      });
+
+      // --- LOGIN AND PROFILE LOGIC ---
+      const loginWrapper = document.getElementById("loginWrapper");
+      const appContainer = document.getElementById("appContainer");
+      const chatMain = document.getElementById("chatMain");
+      const profilePage = document.getElementById("profilePage");
+
+      function renderProfile() {
+        if (!currentUser) return;
+        document.getElementById("sidebarName").textContent = currentUser.name;
+        document.getElementById("sidebarId").textContent = "ID: " + currentUser.id;
+        document.getElementById("avatarInitials").textContent = currentUser.name.charAt(0).toUpperCase();
+
+        document.getElementById("profileName").value = currentUser.name;
+        document.getElementById("profileId").value = currentUser.id;
+        document.getElementById("profileApi").value = currentUser.apiKey;
+      }
+
+      function handleLogin() {
+        const id = document.getElementById("loginId").value.trim();
+        const name = document.getElementById("loginName").value.trim();
+        const pass = document.getElementById("loginPassword").value.trim();
+        const api = document.getElementById("loginApi").value.trim();
+
+        if (!id || !name || !pass || !api) {
+          alert("Please fill in all fields.");
+          return;
+        }
+
+        currentUser = { id, name, apiKey: api };
+        localStorage.setItem("shark_user", JSON.stringify(currentUser));
+        API_KEY = currentUser.apiKey;
+
+        loginWrapper.classList.add("hidden");
+        appContainer.style.display = "flex";
+        renderProfile();
+      }
+
+      function handleLogout() {
+        localStorage.removeItem("shark_user");
+        currentUser = null;
+        API_KEY = "";
+
+        loginWrapper.classList.remove("hidden");
+        appContainer.style.display = "none";
+
+        // Reset view back to chat
+        chatMain.style.display = "flex";
+        profilePage.style.display = "none";
+      }
+
+      document.getElementById("loginSubmitBtn").addEventListener("click", handleLogin);
+
+      // Open Profile Page
+      document.getElementById("openProfileBtn").addEventListener("click", () => {
+        chatMain.style.display = "none";
+        profilePage.style.display = "flex";
+        if (window.innerWidth <= 640) closeSidebar();
+      });
+
+      // Close Profile Page
+      document.getElementById("closeProfileBtn").addEventListener("click", () => {
+        chatMain.style.display = "flex";
+        profilePage.style.display = "none";
+
+        // Update API key if changed in profile
+        const newApi = document.getElementById("profileApi").value.trim();
+        if (newApi && newApi !== currentUser.apiKey) {
+          currentUser.apiKey = newApi;
+          localStorage.setItem("shark_user", JSON.stringify(currentUser));
+          API_KEY = currentUser.apiKey;
+        }
+      });
+
+      document.getElementById("logoutBtn").addEventListener("click", handleLogout);
+
+      // Theme logic
+      const themeToggle = document.getElementById("themeToggle");
+      const savedTheme = localStorage.getItem("shark_theme");
+      if (savedTheme === "light") {
+        document.body.classList.add("light-theme");
+        themeToggle.checked = true;
+      }
+
+      themeToggle.addEventListener("change", function () {
+        if (this.checked) {
+          document.body.classList.add("light-theme");
+          localStorage.setItem("shark_theme", "light");
+        } else {
+          document.body.classList.remove("light-theme");
+          localStorage.setItem("shark_theme", "dark");
+        }
+      });
+
+      // --- INIT ---
+      const storedUser = localStorage.getItem("shark_user");
+      if (storedUser) {
+        try {
+          currentUser = JSON.parse(storedUser);
+          API_KEY = currentUser.apiKey;
+          loginWrapper.classList.add("hidden");
+          appContainer.style.display = "flex";
+          renderProfile();
+        } catch (e) {
+          console.error(e);
+          loginWrapper.classList.remove("hidden");
+        }
+      } else {
+        loginWrapper.classList.remove("hidden");
+      }
+
+      const prefsValue = localStorage.getItem("chats");
+      chats = JSON.parse(prefsValue || "[]");
+
+      if (chats.length === 0) {
+        document.getElementById("newChatBtn").click();
+      } else {
+        loadChat(chats[0].id);
+      }
+
+      // open external links in new tab and handle click outside dropdown
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.msg-actions')) {
+          document.querySelectorAll('.dropdown-menu.show').forEach(m => m.classList.remove('show'));
+        }
+        if (e.target.tagName === 'A' && e.target.target !== '_blank') {
+          e.target.target = '_blank';
+        }
+      });
+
+      document.getElementById("headerNewChatBtn").addEventListener("click", () => {
+        document.getElementById("newChatBtn").click();
+      });
+
+      // --- PPT GENERATION CORE ---
+      const pptModal = document.getElementById("pptModal");
+      const pptLivePreview = document.getElementById("pptLivePreview");
+      const pptTemplateGrid = document.getElementById("pptTemplateGrid");
+      const pptTopicInput = document.getElementById("pptTopicInput");
+      const pptGenerateBtn = document.getElementById("pptGenerateBtn");
+      const pptLiveSlides = document.getElementById("pptLiveSlides");
+      const pptDownloadBtn = document.getElementById("pptDownloadBtn");
+      const pptLiveStatus = document.getElementById("pptLiveStatus");
+      const pptLiveClose = document.getElementById("pptLiveClose");
+
+      const pptTemplates = [
+        { id: "slidepulse", name: "SlidePulse Premium", preview: "linear-gradient(135deg, #111, #4f2cdb)", textConfig: "Light", presBg: "1a1a1a", titleColor: "7b4dff", bodyColor: "ffffff" },
+        { id: "atlas", name: "Microsoft Atlas", preview: "linear-gradient(135deg, #FF3B30, #FF9500)", textConfig: "Dark", presBg: "ffffff", titleColor: "d83b01", bodyColor: "333333" },
+        { id: "madison", name: "Microsoft Madison", preview: "linear-gradient(135deg, #fff, #f4f4f4)", textConfig: "Dark", presBg: "f4f4f4", titleColor: "000000", bodyColor: "444444" },
+        { id: "parcel", name: "Microsoft Parcel", preview: "linear-gradient(135deg, #0078d4, #005a9e)", textConfig: "Light", presBg: "0078d4", titleColor: "ffffff", bodyColor: "f3f2f1" }
+      ];
+      let selectedPptTemplate = pptTemplates[0];
+      let currentPptData = null;
+
+      // Populate Template Grid
+      pptTemplates.forEach((tpl, idx) => {
+        const div = document.createElement('div');
+        div.style.cssText = `background:${tpl.preview}; border:2px solid ${idx === 0 ? '#ff6d3f' : 'transparent'}; border-radius:12px; height:80px; display:flex; align-items:flex-end; padding:8px; cursor:pointer; color:${tpl.textConfig === 'Dark' ? '#000' : '#fff'}; font-weight:bold; font-size:0.9rem; transition:0.2s;`;
+        div.textContent = tpl.name;
+        div.onclick = () => {
+          pptTemplateGrid.querySelectorAll('div').forEach(d => d.style.borderColor = 'transparent');
+          div.style.borderColor = '#ff6d3f';
+          selectedPptTemplate = tpl;
+        };
+        pptTemplateGrid.appendChild(div);
+      });
+
+      // Open / Close Modal
+      document.getElementById("pptOpenBtn").addEventListener('click', () => { pptModal.style.display = 'flex'; setTimeout(() => pptTopicInput.focus(), 100); });
+      document.getElementById("pptModalClose").addEventListener('click', () => { pptModal.style.display = 'none'; });
+      // pptLiveClose listener removed as we don't use overlay anymore
+
+      async function generatePptAI() {
+        const topic = pptTopicInput.value.trim();
+        const slideCount = parseInt(document.getElementById("pptSlideCount").value) || 6;
+        if (!topic) { alert("Please enter a topic!"); pptTopicInput.focus(); return; }
+
+        pptModal.style.display = "none";
+
+        // Add User Message
+        const userText = `Please create a ${slideCount}-slide presentation about: ${topic}`;
+        addPermanentMessage("user", userText, userText);
+
+        // Create bot message container for PPT
+        const chatContainer = document.getElementById("chat");
+        const wrapperDiv = document.createElement("div");
+        wrapperDiv.className = "msg-wrapper msg-wrapper-bot";
+        const msgDiv = document.createElement("div");
+        msgDiv.className = "msg bot";
+
+        const contentDiv = document.createElement("div");
+        contentDiv.className = "msg-content";
+        contentDiv.innerHTML = `<p style="color:#56b4ff; font-weight:bold;"><i class="fas fa-spinner fa-spin"></i> Researching and structuring ${slideCount} slides...</p>`;
+
+        const ts = document.createElement("div");
+        ts.className = "timestamp";
+        ts.textContent = getTimestamp();
+
+        msgDiv.appendChild(contentDiv);
+        msgDiv.appendChild(ts);
+        wrapperDiv.appendChild(msgDiv);
+        chatContainer.appendChild(wrapperDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        const systemPrompt = `You are a professional PowerPoint slide planner. The user wants a presentation on "${topic}" with exactly ${slideCount} slides.
+You must return your entire answer as a valid JSON object matching this exact schema:
+{
+  "explanation": "A detailed, multi-paragraph Markdown explanation and analysis of the topic. This will be shown to the user as a comprehensive written guide before the slides.",
+  "slides": [
+    {
+      "slideNumber": 1,
+      "title": "Title of the slide",
+      "subtitle": "Subtitle (only for title slide, otherwise empty)",
+      "bullets": ["First point (must be at least 15 words)...", "Second point (must be at least 15 words)...", "etc..."],
+      "imageQuery": "A precise, highly visual search keyword (e.g. 'office meeting professional') or empty string if no image needed"
+    }
+  ]
+}
+IMPORTANT INSTRUCTION: Every single point inside the 'bullets' array MUST contain AT LEAST 15 words. Ensure the JSON is perfectly valid and enclosed in a \`\`\`json block. Include varied image queries representing the content.`;
+
+        try {
+          const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: { "Authorization": "Bearer " + API_KEY, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              model: MODEL,
+              messages: [{ role: "system", content: systemPrompt }, { role: "user", content: `Generate the ${slideCount}-slide PPT about: ${topic}. Give me ONLY the JSON.` }]
+            })
+          });
+
+          if (!response.ok) throw new Error('API error');
+          const data = await response.json();
+          const content = data.choices[0].message.content;
+
+          // Extract JSON
+          const jsonMatch = content.match(/\`\`\`json([\s\S]*?)\`\`\`/);
+          let jsonStr = jsonMatch ? jsonMatch[1].trim() : content;
+          if (!jsonStr.startsWith('{')) jsonStr = jsonStr.substring(jsonStr.indexOf('{'));
+          if (!jsonStr.endsWith('}')) jsonStr = jsonStr.substring(0, jsonStr.lastIndexOf('}') + 1);
+
+          const parsed = JSON.parse(jsonStr);
+          const slidesData = parsed.slides;
+          const explanationData = parsed.explanation || "";
+
+          contentDiv.innerHTML = "";
+
+          if (explanationData) {
+            const explanationBlock = document.createElement("div");
+            explanationBlock.style.marginBottom = "24px";
+            renderMarkdownToElement(explanationData, explanationBlock);
+            contentDiv.appendChild(explanationBlock);
+          }
+
+          const loadingSlidesTxt = document.createElement("p");
+          loadingSlidesTxt.style.cssText = "color:#56b4ff; font-weight:bold;";
+          loadingSlidesTxt.innerHTML = `<i class="fas fa-images"></i> Applying visual template...`;
+          contentDiv.appendChild(loadingSlidesTxt);
+
+          const slidesContainer = document.createElement('div');
+          slidesContainer.style.cssText = "display:flex; flex-direction:column; gap:16px; margin-top:16px; width:100%;";
+          contentDiv.appendChild(slidesContainer);
+
+          await renderLiveSlides(slidesData, slidesContainer, selectedPptTemplate);
+
+          // Add download button to the chat
+          const downloadBtn = document.createElement('button');
+          downloadBtn.className = 'ppt-download-btn';
+          downloadBtn.innerHTML = `<i class="fas fa-magic"></i> Download Generated Content (PPTX)`;
+          downloadBtn.style.cssText = "margin-top:20px; padding:12px 24px; background:linear-gradient(135deg,#00c853,#00e676); color:#fff; border:none; border-radius:12px; font-size:1rem; font-weight:bold; cursor:pointer;";
+          downloadBtn.onclick = () => downloadPPTX(slidesData, selectedPptTemplate, topic, downloadBtn);
+
+          // Clear loading text
+          loadingSlidesTxt.innerHTML = `<i class="fas fa-check-circle" style="color:#00ff00;"></i> Generation Complete!`;
+          contentDiv.appendChild(downloadBtn);
+
+          // If SlidePulse template is selected, provide the direct GitHub template link
+          if (selectedPptTemplate.id === "slidepulse") {
+            const slidePulseBtn = document.createElement('a');
+            slidePulseBtn.href = "https://raw.githubusercontent.com/SlidePulse/free-AI-Powerpoint-template/main/free%20AI%20Powerpoint%20template.pptx";
+            slidePulseBtn.target = "_blank";
+            slidePulseBtn.download = "free AI Powerpoint template.pptx";
+            slidePulseBtn.innerHTML = `<i class="fab fa-github"></i> Get Premium Theme (GitHub Template)`;
+            slidePulseBtn.style.cssText = "display:inline-block; margin-top:10px; margin-left:10px; padding:12px 24px; background:linear-gradient(135deg,#6b11ff,#4a00e0); color:#fff; border:none; border-radius:12px; font-size:1rem; font-weight:bold; cursor:pointer; text-decoration:none;";
+            contentDiv.appendChild(slidePulseBtn);
+          }
+
+          // Save to chat history
+          if (currentChatId) {
+            const chat = chats.find(c => c.id === currentChatId);
+            chat.messages.push({
+              role: "assistant",
+              content: "[Generated PPT: " + topic + "]",
+              displayContent: contentDiv.innerHTML,
+              isHtml: true,
+              pptData: { slidesData, tpl: selectedPptTemplate, topic },
+              timestamp: ts.textContent
+            });
+            persistChats();
+          }
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        } catch (err) {
+          contentDiv.innerHTML = `<p style="color:#ff4444;"><i class="fas fa-exclamation-triangle"></i> Error generating PPT: ${err.message}</p>`;
+          console.error(err);
+        }
+      }
+
+      pptGenerateBtn.addEventListener("click", generatePptAI);
+
+      window.selectPptImg = function (el, sNum) {
+        let parent = el.closest('.msg-content');
+        if (!parent) return;
+        parent.querySelectorAll('.chk-img-' + sNum).forEach(d => {
+          d.style.border = '2px solid transparent';
+          d.classList.remove('selected-img');
+        });
+        el.style.border = '3px solid #ff6d3f';
+        el.classList.add('selected-img');
+      };
+
+      function createSlideHTML(slide, tpl) {
+        const div = document.createElement('div');
+        div.style.cssText = `background:#${tpl.presBg}; color:#${tpl.bodyColor}; border-radius:12px; padding:30px; box-shadow:0 8px 30px rgba(0,0,0,0.5); display:flex; flex-direction:column; gap:16px; min-height:350px; position:relative; overflow:hidden; font-family:Arial, sans-serif; opacity:0; transform:translateY(20px); transition:all 0.5s ease-out;`;
+
+        let html = ``;
+        if (slide.slideNumber === 1 && slide.subtitle) {
+          // Title Slide formatting
+          html += `<div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; z-index:2;">
+            <h1 style="color:#${tpl.titleColor}; font-size:2.8rem; margin:0 0 16px 0;">${slide.title}</h1>
+            <h3 style="color:#${tpl.bodyColor}; font-size:1.4rem; opacity:0.8; margin:0;">${slide.subtitle}</h3>
+          </div>`;
+        } else {
+          // Standard Slide formatting
+          html += `<div style="z-index:2; flex:1; display:flex; flex-direction:column;">
+            <h2 style="color:#${tpl.titleColor}; font-size:2rem; border-bottom:3px solid #${tpl.titleColor}; padding-bottom:12px; margin:0 0 20px 0;">${slide.title}</h2>
+            <div style="display:flex; gap:20px; flex:1;">
+              <div style="flex:1;">
+                <ul style="font-size:1.1rem; line-height:1.5; margin:0; padding-left:20px;">
+                  ${slide.bullets.map(b => `<li style="margin-bottom:10px;">${b}</li>`).join('')}
+                </ul>
+              </div>
+              ${(slide.imageQuery && slide.realImages) ? `
+              <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+                <p style="margin:0; font-size:0.9rem; opacity:0.7; font-weight:bold;"><i class="fas fa-globe"></i> Fetched from Internet:</p>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; height:100%;">
+                  <div class="chk-img chk-img-${slide.slideNumber} selected-img" data-url="${slide.realImages[0]}" style="border-radius:6px; cursor:pointer; border:3px solid #ff6d3f; overflow:hidden;" onclick="window.selectPptImg(this, ${slide.slideNumber})"><img src="${slide.realImages[0]}" crossorigin="anonymous" style="width:100%; height:100%; object-fit:cover; display:block;" onerror="this.src='https://picsum.photos/400/300?seed=${slide.slideNumber}1'"></div>
+                  <div class="chk-img chk-img-${slide.slideNumber}" data-url="${slide.realImages[1]}" style="border-radius:6px; cursor:pointer; border:2px solid transparent; overflow:hidden;" onclick="window.selectPptImg(this, ${slide.slideNumber})"><img src="${slide.realImages[1]}" crossorigin="anonymous" style="width:100%; height:100%; object-fit:cover; display:block;" onerror="this.src='https://picsum.photos/400/300?seed=${slide.slideNumber}2'"></div>
+                  <div class="chk-img chk-img-${slide.slideNumber}" data-url="${slide.realImages[2]}" style="border-radius:6px; cursor:pointer; border:2px solid transparent; overflow:hidden;" onclick="window.selectPptImg(this, ${slide.slideNumber})"><img src="${slide.realImages[2]}" crossorigin="anonymous" style="width:100%; height:100%; object-fit:cover; display:block;" onerror="this.src='https://picsum.photos/400/300?seed=${slide.slideNumber}3'"></div>
+                  <div class="chk-img chk-img-${slide.slideNumber}" data-url="${slide.realImages[3]}" style="border-radius:6px; cursor:pointer; border:2px solid transparent; overflow:hidden;" onclick="window.selectPptImg(this, ${slide.slideNumber})"><img src="${slide.realImages[3]}" crossorigin="anonymous" style="width:100%; height:100%; object-fit:cover; display:block;" onerror="this.src='https://picsum.photos/400/300?seed=${slide.slideNumber}4'"></div>
+                </div>
+              </div>` : ''}
+            </div>
+          </div>`;
+        }
+
+        div.innerHTML = html;
+        return div;
+      }
+
+      async function fetchRealImages(query) {
+        if (!query) return [];
+        try {
+          // Direct integration with Bing Image Search exactly as requested.
+          // Appends visual keywords to ensure 4 distinct Bing results for the grid variation
+          const words = ['', ' real photo', ' photography', ' professional hd'];
+          const baseBing = "https://tse1.mm.bing.net/th?q=";
+          return words.map(v => `${baseBing}${encodeURIComponent(query + v)}&w=800&h=600&c=7&rs=1&p=0`);
+        } catch (e) { }
+        return Array(4).fill().map((_, i) => `https://picsum.photos/800/600?seed=${query + i}`);
+      }
+
+      async function renderLiveSlides(slides, container, tpl) {
+        for (let i = 0; i < slides.length; i++) {
+          const slide = slides[i];
+
+          if (slide.imageQuery) {
+            const loadingHtml = document.createElement('p');
+            loadingHtml.style.cssText = "color:#56b4ff; font-weight:bold; font-size: 0.9rem; margin-top: 5px;";
+            loadingHtml.innerHTML = `<i class="fas fa-search"></i> Searching internet for images of: ${slide.imageQuery}...`;
+            container.appendChild(loadingHtml);
+            slide.realImages = await fetchRealImages(slide.imageQuery);
+            container.removeChild(loadingHtml);
+          }
+
+          const slideDiv = createSlideHTML(slide, tpl);
+          container.appendChild(slideDiv);
+          // animate in
+          await new Promise(r => setTimeout(r, 100)); // small stagger
+          requestAnimationFrame(() => {
+            slideDiv.style.opacity = '1';
+            slideDiv.style.transform = 'translateY(0)';
+            slideDiv.scrollIntoView({ behavior: "smooth", block: "end" });
+          });
+          // artificial delay to simulate rendering effort per slide feeling
+          await new Promise(r => setTimeout(r, 300));
+        }
+      }
+
+      // Helper to fetch images via JS to prevent PptxGenJS cors/redirect parsing issues
+      async function getBase64ImageFromUrl(imageUrl) {
+        try {
+          const res = await fetch(imageUrl);
+          if (!res.ok) return null;
+          const blob = await res.blob();
+          return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(blob);
+          });
+        } catch (e) {
+          return null;
+        }
+      }
+
+      async function downloadPPTX(slidesData, tpl, topic, btnRef) {
+        if (!window.PptxGenJS) return;
+
+        btnRef.disabled = true;
+        btnRef.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Preparing PPTX Download...`;
+
+        const p = new PptxGenJS();
+        p.layout = 'LAYOUT_16x9';
+
+        for (let i = 0; i < slidesData.length; i++) {
+          const s = slidesData[i];
+          const slide = p.addSlide();
+          slide.background = { fill: tpl.presBg };
+
+          if (s.slideNumber === 1 && s.subtitle) {
+            slide.addText(s.title, { x: 1, y: 2, w: 8, h: 1.5, fontSize: 44, bold: true, color: tpl.titleColor, align: "center" });
+            slide.addText(s.subtitle, { x: 1, y: 3.5, w: 8, h: 1, fontSize: 24, color: tpl.bodyColor, align: "center" });
+          } else {
+            slide.addText(s.title, { x: 0.5, y: 0.5, w: 9, h: 0.8, fontSize: 32, bold: true, color: tpl.titleColor, border: { type: "bottom", color: tpl.titleColor, pt: 2 } });
+
+            if (s.imageQuery) {
+              // Half width text
+              slide.addText(s.bullets.map(b => ({ text: b, options: { bullet: true, breakLine: true } })), { x: 0.5, y: 1.8, w: 4.2, h: 3.2, fontSize: 18, color: tpl.bodyColor, align: "left" });
+
+              // Fetch image natively and insert as base64 to guarantee download
+              const msgContainer = btnRef.closest('.msg-content');
+              let url = (s.realImages && s.realImages.length > 0) ? s.realImages[0] : `https://picsum.photos/800/600?seed=${s.slideNumber}`;
+
+              if (msgContainer) {
+                const checked = msgContainer.querySelector(`.chk-img-${s.slideNumber}.selected-img`) || msgContainer.querySelector(`.chk-img-${s.slideNumber}[style*="border: 3px"]`);
+                if (checked && checked.dataset.url) {
+                  url = checked.dataset.url;
+                }
+              }
+
+              const b64 = await getBase64ImageFromUrl(url);
+              if (b64) {
+                slide.addImage({ x: 5.2, y: 1.8, w: 4.3, h: 3.2, data: b64 });
+              }
+            } else {
+              // Full width text
+              slide.addText(s.bullets.map(b => ({ text: b, options: { bullet: true, breakLine: true } })), { x: 0.5, y: 1.8, w: 9, h: 3.2, fontSize: 18, color: tpl.bodyColor, align: "left" });
+            }
+          }
+        }
+
+        const safeTopic = topic.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'presentation';
+        await p.writeFile({ fileName: `SharkAI_${safeTopic}.pptx` });
+
+        btnRef.disabled = false;
+        btnRef.innerHTML = `<i class="fas fa-download"></i> Download PPTX Document`;
+      }
+
+    })();
+  </script>
+</body>
+
+</html>
