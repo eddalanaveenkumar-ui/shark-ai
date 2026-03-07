@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>One Piece AI · Real Icons + Logo</title>
+  <title>Shark AI</title>
   <!-- Font Awesome 6 (free) for real icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <!-- Markdown + code highlighting libraries -->
@@ -1815,52 +1815,52 @@
       }
 
       // --- PDF DOWNLOAD HOOK ---
-      window.downloadAsPdf = async function(btn) {
-         if (!window.html2pdf) {
-            alert('PDF engine is still loading...');
-            return;
-         }
-         const originalHtml = btn.innerHTML;
-         btn.disabled = true;
-         btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Converting to PDF...`;
-         
-         const msgContent = btn.closest('.msg-content');
-         const wrapper = document.createElement('div');
-         wrapper.innerHTML = msgContent.innerHTML;
-         
-         wrapper.querySelectorAll('.pdf-prompt-box, .msg-actions, .copy-code-btn, .download-code-btn').forEach(p => p.remove());
-         
-         wrapper.style.color = '#000';
-         wrapper.style.background = '#fff';
-         wrapper.style.fontFamily = 'Arial, sans-serif';
-         wrapper.style.lineHeight = '1.6';
-         wrapper.style.padding = '30px';
-         
-         Array.from(wrapper.querySelectorAll('*')).forEach(el => {
-           el.style.color = '#000';
-           if(el.tagName === 'PRE') {
-             el.style.backgroundColor = '#f4f4f4';
-             el.style.padding = '15px';
-             el.style.borderRadius = '5px';
-             el.style.whiteSpace = 'pre-wrap';
-             el.style.border = '1px solid #ddd';
-           }
-         });
-         
-         const opt = {
-            margin:       10,
-            filename:     'SharkAI_Document_Analysis.pdf',
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2 },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-         };
-         
-         document.body.appendChild(wrapper);
-         try { await html2pdf().set(opt).from(wrapper).save(); } catch(e) {}
-         document.body.removeChild(wrapper);
-         
-         btn.disabled = false;
-         btn.innerHTML = originalHtml;
+      window.downloadAsPdf = async function (btn) {
+        if (!window.html2pdf) {
+          alert('PDF engine is still loading...');
+          return;
+        }
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Converting to PDF...`;
+
+        const msgContent = btn.closest('.msg-content');
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = msgContent.innerHTML;
+
+        wrapper.querySelectorAll('.pdf-prompt-box, .msg-actions, .copy-code-btn, .download-code-btn').forEach(p => p.remove());
+
+        wrapper.style.color = '#000';
+        wrapper.style.background = '#fff';
+        wrapper.style.fontFamily = 'Arial, sans-serif';
+        wrapper.style.lineHeight = '1.6';
+        wrapper.style.padding = '30px';
+
+        Array.from(wrapper.querySelectorAll('*')).forEach(el => {
+          el.style.color = '#000';
+          if (el.tagName === 'PRE') {
+            el.style.backgroundColor = '#f4f4f4';
+            el.style.padding = '15px';
+            el.style.borderRadius = '5px';
+            el.style.whiteSpace = 'pre-wrap';
+            el.style.border = '1px solid #ddd';
+          }
+        });
+
+        const opt = {
+          margin: 10,
+          filename: 'SharkAI_Document_Analysis.pdf',
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        document.body.appendChild(wrapper);
+        try { await html2pdf().set(opt).from(wrapper).save(); } catch (e) { }
+        document.body.removeChild(wrapper);
+
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
       };
 
       // --- PERMANENT MESSAGE ---
@@ -1880,18 +1880,18 @@
         const contentDiv = document.createElement("div");
         contentDiv.className = "msg-content";
         renderMarkdownToElement(displayContent || content, contentDiv);
-        
+
         if (role === 'assistant' && showPdfPrompt) {
-            const pdfPromptDiv = document.createElement('div');
-            pdfPromptDiv.className = 'pdf-prompt-box';
-            pdfPromptDiv.style.cssText = "margin-top:15px; padding:15px; border-radius:12px; background:var(--green); border:1px solid #333;";
-            pdfPromptDiv.innerHTML = `
+          const pdfPromptDiv = document.createElement('div');
+          pdfPromptDiv.className = 'pdf-prompt-box';
+          pdfPromptDiv.style.cssText = "margin-top:15px; padding:15px; border-radius:12px; background:var(--green); border:1px solid #333;";
+          pdfPromptDiv.innerHTML = `
               <p style="margin-bottom:10px; font-weight:bold; color:var(--text-light); font-size:0.95rem;"><i class="fas fa-file-pdf" style="color:#ff4b2b;"></i> Would you like to generate a PDF of this analysis?</p>
               <button class="pdf-download-btn" onclick="window.downloadAsPdf(this)" style="padding:10px 20px; background:linear-gradient(135deg,#ff4b2b,#ff416c); color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.9rem;"><i class="fas fa-download"></i> Convert AI Response to PDF</button>
             `;
-            contentDiv.appendChild(pdfPromptDiv);
+          contentDiv.appendChild(pdfPromptDiv);
         }
-        
+
         msgDiv.appendChild(contentDiv);
 
         const ts = document.createElement("div");
@@ -2253,14 +2253,14 @@
           } else {
             renderMarkdownToElement(msg.displayContent || msg.content, contentDiv);
             if (msg.role === 'assistant' && msg.showPdfPrompt) {
-                const pdfPromptDiv = document.createElement('div');
-                pdfPromptDiv.className = 'pdf-prompt-box';
-                pdfPromptDiv.style.cssText = "margin-top:15px; padding:15px; border-radius:12px; background:var(--green); border:1px solid #333;";
-                pdfPromptDiv.innerHTML = `
+              const pdfPromptDiv = document.createElement('div');
+              pdfPromptDiv.className = 'pdf-prompt-box';
+              pdfPromptDiv.style.cssText = "margin-top:15px; padding:15px; border-radius:12px; background:var(--green); border:1px solid #333;";
+              pdfPromptDiv.innerHTML = `
                   <p style="margin-bottom:10px; font-weight:bold; color:var(--text-light); font-size:0.95rem;"><i class="fas fa-file-pdf" style="color:#ff4b2b;"></i> Would you like to generate a PDF of this analysis?</p>
                   <button class="pdf-download-btn" onclick="window.downloadAsPdf(this)" style="padding:10px 20px; background:linear-gradient(135deg,#ff4b2b,#ff416c); color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.9rem;"><i class="fas fa-download"></i> Convert AI Response to PDF</button>
                 `;
-                contentDiv.appendChild(pdfPromptDiv);
+              contentDiv.appendChild(pdfPromptDiv);
             }
           }
           msgDiv.appendChild(contentDiv);
