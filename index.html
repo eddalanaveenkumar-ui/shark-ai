@@ -1578,6 +1578,11 @@
       }
       document.getElementById('openRouterPkceBtn').addEventListener('click', async (e) => {
           e.preventDefault();
+          // Save what the user has currently typed so we can restore it after the redirect
+          localStorage.setItem('pkce_saved_id', document.getElementById("loginId").value.trim());
+          localStorage.setItem('pkce_saved_name', document.getElementById("loginName").value.trim());
+          localStorage.setItem('pkce_saved_pass', document.getElementById("loginPassword").value.trim());
+
           const code_verifier = pkceGenerateRandomString(64);
           localStorage.setItem('pkce_code_verifier', code_verifier);
           const code_challenge = await pkceSha256(code_verifier);
@@ -2916,9 +2921,21 @@ FORMATTING RULES (ALWAYS FOLLOW FOR EVERY RESPONSE):
                  if (response.ok) {
                      const data = await response.json();
                      document.getElementById("loginApi").value = data.key;
-                     if (!document.getElementById("loginId").value) document.getElementById("loginId").value = "user_" + Math.floor(Math.random() * 10000);
-                     if (!document.getElementById("loginName").value) document.getElementById("loginName").value = "Shark User";
-                     if (!document.getElementById("loginPassword").value) document.getElementById("loginPassword").value = "password";
+                     
+                     // Retrieve previously typed user values or fallback to defaults
+                     const savedId = localStorage.getItem('pkce_saved_id');
+                     const savedName = localStorage.getItem('pkce_saved_name');
+                     const savedPass = localStorage.getItem('pkce_saved_pass');
+                     
+                     if (!document.getElementById("loginId").value) document.getElementById("loginId").value = savedId || ("user_" + Math.floor(Math.random() * 10000));
+                     if (!document.getElementById("loginName").value) document.getElementById("loginName").value = savedName || "Shark User";
+                     if (!document.getElementById("loginPassword").value) document.getElementById("loginPassword").value = savedPass || "password";
+                     
+                     // Clean up temporary PKCE states
+                     localStorage.removeItem('pkce_saved_id');
+                     localStorage.removeItem('pkce_saved_name');
+                     localStorage.removeItem('pkce_saved_pass');
+                     localStorage.removeItem('pkce_code_verifier');
                      
                      document.getElementById("loginSubmitBtn").innerHTML = "Sign In";
                      document.getElementById("loginSubmitBtn").disabled = false;
