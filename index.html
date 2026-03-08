@@ -1589,6 +1589,7 @@
       let currentChatId = null;
       let streamingMsgDiv = null;
       let isStreaming = false;
+      let streamAbortController = null;
       let isAnsweringFile = false;
 
       // --- PKCE SETUP ---
@@ -1703,7 +1704,9 @@
         }
       }
 
-      async function playRecord(text, msgContentEl) {
+      let ttsCurrentReadBtn = null; // track which readBtn is active
+
+      async function playRecord(text, msgContentEl, readBtnRef) {
         const cleanText = text.replace(/[*_#`]/g, '').replace(/!\[.*?\]\(.*?\)/g, '');
 
         // Stop any previous native TTS if available
@@ -1714,6 +1717,13 @@
         if (!('speechSynthesis' in window)) return;
         window.speechSynthesis.cancel();
         ttsCleanup();
+
+        // Update readBtn to stop icon
+        if (readBtnRef) {
+          ttsCurrentReadBtn = readBtnRef;
+          readBtnRef.innerHTML = '<i class="fas fa-stop"></i>';
+          readBtnRef.style.color = '#e91e7a';
+        }
 
         const utterance = new SpeechSynthesisUtterance(cleanText);
         utterance.rate = 1.15;
@@ -1783,11 +1793,25 @@
             }
           };
 
-          utterance.onend = () => { ttsCleanup(); };
-          utterance.onerror = () => { ttsCleanup(); };
+          utterance.onend = () => { ttsCleanup(); ttsResetBtn(); };
+          utterance.onerror = () => { ttsCleanup(); ttsResetBtn(); };
         }
 
         window.speechSynthesis.speak(utterance);
+      }
+
+      function stopTTS() {
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        ttsCleanup();
+        ttsResetBtn();
+      }
+
+      function ttsResetBtn() {
+        if (ttsCurrentReadBtn) {
+          ttsCurrentReadBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+          ttsCurrentReadBtn.style.color = '';
+          ttsCurrentReadBtn = null;
+        }
       }
 
       // --- WEB SEARCH TOGGLE ---
@@ -2258,9 +2282,14 @@
           readBtn.className = "msg-action-btn";
           readBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
           readBtn.onclick = () => {
+            // If TTS is currently playing from this button, stop it
+            if (ttsCurrentReadBtn === readBtn) {
+              stopTTS();
+              return;
+            }
             const wrapper = readBtn.closest('.msg-wrapper') || readBtn.closest('.msg-wrapper-bot');
             const msgContentEl = wrapper ? wrapper.querySelector('.msg-content') : null;
-            playRecord(content, msgContentEl);
+            playRecord(content, msgContentEl, readBtn);
           };
           actionsDiv.appendChild(readBtn);
 
@@ -2752,7 +2781,11 @@
         if (!currentChat || currentChat.messages.length === 0) return;
 
         isStreaming = true;
-        document.getElementById("sendBtn").disabled = true;
+        streamAbortController = new AbortController();
+        const sendBtn = document.getElementById("sendBtn");
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = '<i class="fas fa-stop"></i>';
+        sendBtn.style.background = '#e91e7a';
         const inputField = document.getElementById("input");
         inputField.disabled = true;
 
@@ -2821,7 +2854,8 @@ FORMATTING RULES (ALWAYS FOLLOW FOR EVERY RESPONSE):
               "Authorization": "Bearer " + API_KEY,
               "Content-Type": "application/json"
             },
-            body: JSON.stringify(reqPayload)
+            body: JSON.stringify(reqPayload),
+            signal: streamAbortController.signal
           });
 
           if (!response.ok) throw new Error(`API error ${response.status}`);
@@ -2881,7 +2915,11 @@ FORMATTING RULES (ALWAYS FOLLOW FOR EVERY RESPONSE):
         } finally {
           clearInterval(statusInterval);
           isStreaming = false;
-          document.getElementById("sendBtn").disabled = false;
+          streamAbortController = null;
+          const sendBtn = document.getElementById("sendBtn");
+          sendBtn.disabled = false;
+          sendBtn.innerHTML = '<i class="fas fa-arrow-up"></i>';
+          sendBtn.style.background = '';
           inputField.disabled = false;
           inputField.focus();
         }
@@ -2891,7 +2929,13 @@ FORMATTING RULES (ALWAYS FOLLOW FOR EVERY RESPONSE):
       function sendMessage() {
         const inputField = document.getElementById("input");
         let text = inputField.value.trim();
-        if ((!text && !attachedFileName) || isStreaming) return;
+        if ((!text && !attachedFileName) || isStreaming) {
+          // If streaming, abort it
+          if (isStreaming && streamAbortController) {
+            streamAbortController.abort();
+          }
+          return;
+        }
 
         // Auto-detect Presentation intent
         const pptIntentRegex = /ppt|powerpoint|presentation|slide\sdeck|slides\b/i;
