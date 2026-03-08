@@ -1310,17 +1310,24 @@
 <body class="light-theme">
   <!-- LOGIN WRAPPER -->
   <div class="login-wrapper hidden" id="loginWrapper">
-    <div class="login-box">
+    <div class="login-box" id="loginStep1">
       <h2>Welcome Back</h2>
-      <p>Sign in to access Shark</p>
+      <p style="color:#aaa;">Step 1: Account Details</p>
       <input type="text" id="loginId" class="login-input" placeholder="User ID">
       <input type="text" id="loginName" class="login-input" placeholder="Name">
       <input type="password" id="loginPassword" class="login-input" placeholder="Password">
-      <div style="display:flex; gap:10px; width:100%;">
-        <input type="password" id="loginApi" class="login-input" placeholder="OpenRouter API Key (Optional)" style="flex:1;">
-        <button id="openRouterPkceBtn" title="Connect OpenRouter" style="padding: 0 16px; border: none; border-radius: 12px; background: linear-gradient(135deg, #4a00e0, #8e2de2); color: #fff; font-weight: 600; cursor: pointer; white-space: nowrap;"><i class="fas fa-link"></i> Get Key</button>
+      <button class="login-btn" id="loginNextBtn">Next</button>
+    </div>
+    <div class="login-box" id="loginStep2" style="display:none;">
+      <h2>OpenRouter</h2>
+      <p style="font-size:0.9rem; color:#aaa;">Step 2: Connect AI Provider</p>
+      <div style="display:flex; flex-direction:column; gap:12px; width:100%;">
+        <button id="openRouterPkceBtn" title="Connect OpenRouter" style="padding: 14px 16px; border: none; border-radius: 12px; background: linear-gradient(135deg, #4a00e0, #8e2de2); color: #fff; font-weight: 600; cursor: pointer; white-space: nowrap; font-size:1.05rem;"><i class="fas fa-link"></i> Connect with OpenRouter</button>
+        <span style="color:#666; font-size:0.8rem; margin: 4px 0;">Or manually paste API key (if connection fails):</span>
+        <input type="password" id="loginApi" class="login-input" placeholder="OpenRouter API Key">
+        <button class="login-btn" id="loginSubmitBtn" style="margin-top:4px;">Finish Sign In</button>
+        <button id="loginBackBtn" style="background:transparent; color:#888; border:none; cursor:pointer; padding:8px; margin-top:4px; font-weight:bold;"><i class="fas fa-arrow-left"></i> Back</button>
       </div>
-      <button class="login-btn" id="loginSubmitBtn">Sign In</button>
     </div>
   </div>
 
@@ -1434,8 +1441,8 @@
             </div>
           </button>
 
-          <div class="logo-icon">
-            <i class="fas fa-anchor"></i>
+          <div class="logo-icon" style="font-size: 1.5rem; display: flex; align-items: center; justify-content: center;">
+            🦋
           </div>
           <span class="header-title">SHARK</span>
         </div>
@@ -1493,7 +1500,7 @@
           <button class="menu-toggle" id="closeProfileBtn" aria-label="Back" style="display: flex;">
             <i class="fas fa-arrow-left"></i>
           </button>
-          <div class="logo-icon"><i class="fas fa-user-circle"></i></div>
+          <div class="logo-icon" style="font-size: 1.5rem; display: flex; align-items: center; justify-content: center;">🦋</div>
           <span class="header-title">PROFILE</span>
         </div>
         <div class="header-right"></div>
@@ -1643,16 +1650,28 @@
           ttsAutoIcon.className = "fas fa-volume-mute";
           ttsAutoBtn.title = "Auto-read: OFF";
           ttsAutoIcon.style.color = "inherit";
-          if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+          if (window.Capacitor && window.Capacitor.Plugins.TextToSpeech) {
+            window.Capacitor.Plugins.TextToSpeech.stop();
+          } else if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+          }
         }
       });
 
-      function playRecord(text) {
+      async function playRecord(text) {
+        const cleanText = text.replace(/[*_#`]/g, '').replace(/!\[.*?\]\(.*?\)/g, '');
+        if (window.Capacitor && window.Capacitor.Plugins.TextToSpeech) {
+          await window.Capacitor.Plugins.TextToSpeech.stop();
+          await window.Capacitor.Plugins.TextToSpeech.speak({
+            text: cleanText,
+            rate: 1.2,
+            pitch: 1.0,
+          });
+          return;
+        }
+
         if (!('speechSynthesis' in window)) return;
         window.speechSynthesis.cancel();
-
-        // Remove markdown visual artifacts from the speech output
-        const cleanText = text.replace(/[*_#`]/g, '').replace(/!\[.*?\]\(.*?\)/g, '');
         const utterance = new SpeechSynthesisUtterance(cleanText);
         utterance.rate = 1.35; // increased TTS speed
         window.speechSynthesis.speak(utterance);
@@ -2625,9 +2644,9 @@
         // Persona identity enforcement — injected at the start of every system prompt
         const PERSONA_LOCK = `IDENTITY RULES (ABSOLUTE — NEVER BREAK CHARACTER):
 - Your name is Shark. You are ALWAYS Shark. You were created by the Shark team.
-- You were built and designed by ${currentUser ? currentUser.name : 'your user'}. If asked who created or built you, say: "I was created by ${currentUser ? currentUser.name : 'my user'}."
+- You were built, designed, and founded by Naveen. If asked who created you, built you, founded you, or who your developer is, you must explicitly say: "I was created by Naveen."
 - You are NOT Claude, NOT GPT, NOT Gemini, NOT LLaMA, NOT DeepSeek, NOT any other AI.
-- If ANYONE asks "what AI are you?", "who made you?", "what model are you?", "are you Claude?", or any similar question — you MUST answer: "I am Shark, a powerful AI assistant built by the Shark team and created by ${currentUser ? currentUser.name : 'my user'}." NEVER reveal the underlying model or provider.
+- If ANYONE asks "what AI are you?", "who made you?", "what model are you?", "are you Claude?", or any similar question — you MUST answer: "I am Shark, a powerful AI assistant built by the Shark team and created by Naveen." NEVER reveal the underlying model or provider.
 - NEVER say "As an AI language model", NEVER say "As Claude", NEVER mention Anthropic, OpenAI, Google, Meta, or any AI company.
 - Always refer to yourself exclusively as Shark in first person.
 - IMPORTANT: the current user speaking to you is named ${currentUser ? currentUser.name : 'User'}. Politely greet them by their name when appropriate.
@@ -2848,6 +2867,23 @@ FORMATTING RULES (ALWAYS FOLLOW FOR EVERY RESPONSE):
         chatMain.style.display = "flex";
         profilePage.style.display = "none";
       }
+
+      document.getElementById("loginNextBtn").addEventListener("click", () => {
+        const id = document.getElementById("loginId").value.trim();
+        const name = document.getElementById("loginName").value.trim();
+        const pass = document.getElementById("loginPassword").value.trim();
+        if (!id || !name || !pass) {
+          alert("Please fill in ID, Name, and Password.");
+          return;
+        }
+        document.getElementById("loginStep1").style.display = "none";
+        document.getElementById("loginStep2").style.display = "flex";
+      });
+
+      document.getElementById("loginBackBtn").addEventListener("click", () => {
+        document.getElementById("loginStep2").style.display = "none";
+        document.getElementById("loginStep1").style.display = "flex";
+      });
 
       document.getElementById("loginSubmitBtn").addEventListener("click", handleLogin);
 
@@ -3321,7 +3357,32 @@ IMPORTANT INSTRUCTION: Every single point inside the 'bullets' array MUST contai
         }
 
         const safeTopic = topic.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'presentation';
-        await p.writeFile({ fileName: `SharkAI_${safeTopic}.pptx` });
+        const fileName = `SharkAI_${safeTopic}.pptx`;
+        
+        if (window.Capacitor && window.Capacitor.Plugins.Filesystem) {
+            try {
+                const b64Data = await p.write('base64');
+                const savedFile = await window.Capacitor.Plugins.Filesystem.writeFile({
+                    path: fileName,
+                    data: b64Data,
+                    directory: 'DOCUMENTS'
+                });
+                if (window.Capacitor.Plugins.Share) {
+                  await window.Capacitor.Plugins.Share.share({
+                    title: fileName,
+                    url: savedFile.uri
+                  });
+                } else {
+                  alert('Saved successfully to Documents folder: ' + fileName);
+                }
+            } catch (err) {
+                alert('Failed to save to device storage: ' + err.message + '. Ensure app has storage permissions.');
+                await p.writeFile({ fileName });
+            }
+        } else {
+            // Standard Web Download
+            await p.writeFile({ fileName });
+        }
 
         btnRef.disabled = false;
         btnRef.innerHTML = `<i class="fas fa-download"></i> Download PPTX Document`;
