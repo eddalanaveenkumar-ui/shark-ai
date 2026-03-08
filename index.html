@@ -957,6 +957,34 @@
       transition: all 0.2s;
     }
 
+    /* hide pill text on small screens, keep icons */
+    @media (max-width: 640px) {
+      .ds-pill-btn {
+        padding: 6px 10px;
+        font-size: 0; 
+      }
+      .ds-pill-btn i {
+        font-size: 1rem;
+      }
+      .ds-icon-btn {
+        margin-right: -4px;
+      }
+      .ds-action-right {
+        gap: 8px;
+        margin-right: -4px;
+      }
+      .ppt-hidden-mobile {
+        display: none !important;
+      }
+      .ppt-download-btn,
+      .ppt-github-btn {
+        width: 100%;
+        margin-left: 0 !important;
+        margin-bottom: 10px;
+        box-sizing: border-box;
+      }
+    }
+
     body.light-theme .ds-pill-btn {
       border: 1px solid #ccc;
     }
@@ -1335,10 +1363,24 @@
         style="background:none; border:none; color:#cfcfcf; font-size:1.6rem; cursor:pointer; display:none;"><i
           class="fas fa-times"></i></button>
     </div>
+    
+    <style>
+      @media (max-width: 640px) {
+        #pptLiveSlides { display: none !important; }
+      }
+    </style>
+    
     <div id="pptLiveSlides"
       style="flex:1; width:100%; max-width:720px; overflow-y:auto; display:flex; flex-direction:column; gap:16px; padding-bottom:20px;">
       <!-- Live slides injected here -->
     </div>
+    
+    <!-- Optional message for Mobile users since preview is hidden -->
+    <div id="pptMobileAlert" style="display:none; color: #888; font-style: italic; text-align: center; max-width: 80%; margin: 40px auto; font-size: 0.95rem;">
+      <i class="fas fa-desktop" style="display:block; font-size: 2rem; margin-bottom: 12px; color: #555;"></i>
+      Live preview disabled on mobile to save memory. Tap download when finished!
+    </div>
+
     <button id="pptDownloadBtn"
       style="display:none; padding:14px 32px; background:linear-gradient(135deg,#00c853,#00e676); color:#fff; border:none; border-radius:14px; font-size:1.05rem; font-weight:600; cursor:pointer; margin-top:12px; margin-bottom: 20px;"><i
         class="fas fa-download"></i> Download PPTX Document</button>
@@ -2936,6 +2978,7 @@ IMPORTANT INSTRUCTION: Every single point inside the 'bullets' array MUST contai
           contentDiv.appendChild(loadingSlidesTxt);
 
           const slidesContainer = document.createElement('div');
+          slidesContainer.className = "ppt-hidden-mobile";
           slidesContainer.style.cssText = "display:flex; flex-direction:column; gap:16px; margin-top:16px; width:100%;";
           contentDiv.appendChild(slidesContainer);
 
@@ -2955,11 +2998,12 @@ IMPORTANT INSTRUCTION: Every single point inside the 'bullets' array MUST contai
           // If SlidePulse template is selected, provide the direct GitHub template link
           if (selectedPptTemplate.id === "slidepulse") {
             const slidePulseBtn = document.createElement('a');
+            slidePulseBtn.className = 'ppt-github-btn';
             slidePulseBtn.href = "https://raw.githubusercontent.com/SlidePulse/free-AI-Powerpoint-template/main/free%20AI%20Powerpoint%20template.pptx";
             slidePulseBtn.target = "_blank";
             slidePulseBtn.download = "free AI Powerpoint template.pptx";
             slidePulseBtn.innerHTML = `<i class="fab fa-github"></i> Get Premium Theme (GitHub Template)`;
-            slidePulseBtn.style.cssText = "display:inline-block; margin-top:10px; margin-left:10px; padding:12px 24px; background:linear-gradient(135deg,#6b11ff,#4a00e0); color:#fff; border:none; border-radius:12px; font-size:1rem; font-weight:bold; cursor:pointer; text-decoration:none;";
+            slidePulseBtn.style.cssText = "display:inline-block; margin-top:10px; margin-left:10px; padding:12px 24px; background:linear-gradient(135deg,#6b11ff,#4a00e0); color:#fff; border:none; border-radius:12px; font-size:1rem; font-weight:bold; cursor:pointer; text-decoration:none; text-align:center;";
             contentDiv.appendChild(slidePulseBtn);
           }
 
