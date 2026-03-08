@@ -1161,6 +1161,39 @@
       background: #c0c0c0;
     }
 
+    /* Light Theme overrides for Login Page */
+    body.light-theme .login-wrapper {
+      background: #f0f2f5;
+    }
+    body.light-theme .login-box {
+      background: #ffffff;
+      border: 1px solid #ddd;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    body.light-theme .login-box h2 {
+      color: #111;
+    }
+    body.light-theme .login-box p {
+      color: #666;
+    }
+    body.light-theme .login-input {
+      background: #f9f9f9;
+      color: #333;
+      border: 1px solid #ccc;
+    }
+    body.light-theme .login-input:focus {
+      border-color: #007aff;
+      background: #fff;
+    }
+    body.light-theme .login-btn {
+      background: #111;
+      color: #fff;
+      border: 1px solid #111;
+    }
+    body.light-theme .login-btn:hover {
+      background: #333;
+    }
+
     /* ===== PROFILE & SIDEBAR ===== */
     .sidebar-footer {
       padding: 12px 16px;
@@ -1658,22 +1691,34 @@
         }
       });
 
+      // TTS Overlay for Highlight
+      const ttsOverlay = document.createElement("div");
+      ttsOverlay.id = "ttsOverlay";
+      ttsOverlay.style.cssText = "display:none; position:fixed; bottom:120px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.85); color:#fff; padding:14px 24px; border-radius:16px; z-index:9999; font-size:1.5rem; font-weight:800; box-shadow:0 10px 30px rgba(0,0,0,0.4); text-align:center; max-width:90%; pointer-events:none; border:2px solid var(--accent-blue);";
+      document.body.appendChild(ttsOverlay);
+
       async function playRecord(text) {
         const cleanText = text.replace(/[*_#`]/g, '').replace(/!\[.*?\]\(.*?\)/g, '');
+        
         if (window.Capacitor && window.Capacitor.Plugins.TextToSpeech) {
-          await window.Capacitor.Plugins.TextToSpeech.stop();
-          await window.Capacitor.Plugins.TextToSpeech.speak({
-            text: cleanText,
-            rate: 1.2,
-            pitch: 1.0,
-          });
-          return;
+          try { await window.Capacitor.Plugins.TextToSpeech.stop(); } catch(e){}
         }
 
         if (!('speechSynthesis' in window)) return;
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(cleanText);
-        utterance.rate = 1.35; // increased TTS speed
+        utterance.rate = 1.15; // slightly slower for better read-along
+        
+        utterance.onstart = () => { ttsOverlay.style.display = "block"; ttsOverlay.innerHTML = '<i class="fas fa-volume-up"></i> ...'; };
+        utterance.onboundary = (event) => {
+          if (event.name === 'word') {
+            const word = cleanText.substring(event.charIndex, event.charIndex + event.charLength).trim();
+            if(word.length > 0) ttsOverlay.innerHTML = `<span style="color:#00e676;">${word}</span>`;
+          }
+        };
+        utterance.onend = () => { ttsOverlay.style.display = "none"; };
+        utterance.onerror = () => { ttsOverlay.style.display = "none"; };
+
         window.speechSynthesis.speak(utterance);
       }
 
@@ -3361,17 +3406,47 @@ IMPORTANT INSTRUCTION: Every single point inside the 'bullets' array MUST contai
         
         if (window.Capacitor && window.Capacitor.Plugins.Filesystem) {
             try {
+                // Request Notification Permissions
+                if (window.Capacitor.Plugins.LocalNotifications) {
+                    await window.Capacitor.Plugins.LocalNotifications.requestPermissions();
+                    await window.Capacitor.Plugins.LocalNotifications.schedule({
+                        notifications: [{
+                            title: "Generating PPT",
+                            body: "Building slide data for " + fileName + " (0%)",
+                            id: 1,
+                            schedule: { at: new Date(Date.now() + 100) },
+                        }]
+                    });
+                }
+
                 const b64Data = await p.write('base64');
-                const savedFile = await window.Capacitor.Plugins.Filesystem.writeFile({
+                
+                if (window.Capacitor.Plugins.LocalNotifications) {
+                    await window.Capacitor.Plugins.LocalNotifications.schedule({
+                        notifications: [{
+                            title: "Saving PPT",
+                            body: "Writing to Documents folder... (80%)",
+                            id: 1,
+                            schedule: { at: new Date(Date.now() + 100) },
+                        }]
+                    });
+                }
+
+                await window.Capacitor.Plugins.Filesystem.writeFile({
                     path: fileName,
                     data: b64Data,
                     directory: 'DOCUMENTS'
                 });
-                if (window.Capacitor.Plugins.Share) {
-                  await window.Capacitor.Plugins.Share.share({
-                    title: fileName,
-                    url: savedFile.uri
-                  });
+                
+                if (window.Capacitor.Plugins.LocalNotifications) {
+                    await window.Capacitor.Plugins.LocalNotifications.schedule({
+                        notifications: [{
+                            title: "Download Complete! ✨",
+                            body: "Successfully saved " + fileName + " to your Documents folder.",
+                            id: 2,
+                            schedule: { at: new Date(Date.now() + 100) },
+                        }]
+                    });
                 } else {
                   alert('Saved successfully to Documents folder: ' + fileName);
                 }
