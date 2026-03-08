@@ -1307,7 +1307,7 @@
   </style>
 </head>
 
-<body>
+<body class="light-theme">
   <!-- LOGIN WRAPPER -->
   <div class="login-wrapper hidden" id="loginWrapper">
     <div class="login-box">
@@ -1316,7 +1316,10 @@
       <input type="text" id="loginId" class="login-input" placeholder="User ID">
       <input type="text" id="loginName" class="login-input" placeholder="Name">
       <input type="password" id="loginPassword" class="login-input" placeholder="Password">
-      <input type="password" id="loginApi" class="login-input" placeholder="OpenRouter API Key">
+      <div style="display:flex; gap:10px; width:100%;">
+        <input type="password" id="loginApi" class="login-input" placeholder="OpenRouter API Key (Optional)" style="flex:1;">
+        <button id="openRouterPkceBtn" title="Connect OpenRouter" style="padding: 0 16px; border: none; border-radius: 12px; background: linear-gradient(135deg, #4a00e0, #8e2de2); color: #fff; font-weight: 600; cursor: pointer; white-space: nowrap;"><i class="fas fa-link"></i> Get Key</button>
+      </div>
       <button class="login-btn" id="loginSubmitBtn">Sign In</button>
     </div>
   </div>
@@ -1547,6 +1550,77 @@
       let streamingMsgDiv = null;
       let isStreaming = false;
       let isAnsweringFile = false;
+
+      // --- PKCE SETUP ---
+      function pkceGenerateRandomString(length) {
+          const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+          let result = '';
+          const array = new Uint32Array(length);
+          window.crypto.getRandomValues(array);
+          for (let i = 0; i < length; i++) {
+              result += charset[array[i] % charset.length];
+          }
+          return result;
+      }
+      async function pkceSha256(plain) {
+          const encoder = new TextEncoder();
+          const data = encoder.encode(plain);
+          const hash = await window.crypto.subtle.digest('SHA-256', data);
+          return base64urlencode(hash);
+      }
+      function base64urlencode(a) {
+          let str = "";
+          const bytes = new Uint8Array(a);
+          for (let i = 0; i < bytes.byteLength; i++) {
+              str += String.fromCharCode(bytes[i]);
+          }
+          return btoa(str).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+      }
+      document.getElementById('openRouterPkceBtn').addEventListener('click', async (e) => {
+          e.preventDefault();
+          const code_verifier = pkceGenerateRandomString(64);
+          localStorage.setItem('pkce_code_verifier', code_verifier);
+          const code_challenge = await pkceSha256(code_verifier);
+          
+          // Force app domain for Deep Linking on Mobile AND Web consistency
+          let callback_url = 'https://sharkaii.netlify.app/'; 
+          
+          window.location.href = `https://openrouter.ai/auth?callback_url=${encodeURIComponent(callback_url)}&code_challenge=${code_challenge}&code_challenge_method=S256`;
+      });
+
+      // Catch Capacitor Deep Links & Native Events (Android APK)
+      if (window.Capacitor && window.Capacitor.Plugins.App) {
+          window.Capacitor.Plugins.App.addListener('appUrlOpen', data => {
+              if (data.url.includes('?code=')) {
+                  const incomingUrl = new URL(data.url);
+                  const deepLinkCode = incomingUrl.searchParams.get('code');
+                  if (deepLinkCode) {
+                      processPkceCode(deepLinkCode);
+                  }
+              }
+          });
+
+          // Custom Hardware Back Button Logic (prevents unwanted URL history navigation)
+          window.Capacitor.Plugins.App.addListener('backButton', ({ canGoBack }) => {
+              const pptModal = document.getElementById("pptModal");
+              const pptLivePreview = document.getElementById("pptLivePreview");
+              const profilePage = document.getElementById("profilePage");
+              const sidebar = document.getElementById("sidebar");
+
+              if (pptLivePreview && pptLivePreview.style.display === 'flex') {
+                  pptLivePreview.style.display = 'none';
+              } else if (pptModal && pptModal.style.display === 'flex') {
+                  pptModal.style.display = 'none';
+              } else if (profilePage && profilePage.style.display === 'flex') {
+                  document.getElementById("closeProfileBtn").click();
+              } else if (sidebar && sidebar.classList.contains('active')) {
+                  closeSidebar();
+              } else {
+                  // If nothing is open, naturally close the app
+                  window.Capacitor.Plugins.App.exitApp();
+              }
+          });
+      }
 
       // --- TTS SETUP ---
       let ttsAutoEnabled = false;
@@ -2798,7 +2872,10 @@ FORMATTING RULES (ALWAYS FOLLOW FOR EVERY RESPONSE):
       // Theme logic
       const themeToggle = document.getElementById("themeToggle");
       const savedTheme = localStorage.getItem("shark_theme");
-      if (savedTheme === "light") {
+      if (savedTheme === "dark") {
+        document.body.classList.remove("light-theme");
+        themeToggle.checked = false;
+      } else {
         document.body.classList.add("light-theme");
         themeToggle.checked = true;
       }
@@ -2814,8 +2891,53 @@ FORMATTING RULES (ALWAYS FOLLOW FOR EVERY RESPONSE):
       });
 
       // --- INIT ---
+      const urlParams = new URLSearchParams(window.location.search);
+      const pkceCode = urlParams.get('code');
       const storedUser = localStorage.getItem("shark_user");
-      if (storedUser) {
+      
+      async function processPkceCode(codeStr) {
+         window.history.replaceState({}, document.title, window.location.pathname);
+         const code_verifier = localStorage.getItem('pkce_code_verifier');
+         if (code_verifier) {
+             document.getElementById("loginSubmitBtn").innerHTML = "<i class='fas fa-spinner fa-spin'></i> Connecting...";
+             document.getElementById("loginSubmitBtn").disabled = true;
+             loginWrapper.classList.remove("hidden");
+             
+             try {
+                 const response = await fetch("https://openrouter.ai/api/v1/auth/keys", {
+                     method: "POST",
+                     headers: { "Content-Type": "application/json" },
+                     body: JSON.stringify({
+                         code: codeStr,
+                         code_verifier: code_verifier,
+                         code_challenge_method: "S256"
+                     })
+                 });
+                 if (response.ok) {
+                     const data = await response.json();
+                     document.getElementById("loginApi").value = data.key;
+                     if (!document.getElementById("loginId").value) document.getElementById("loginId").value = "user_" + Math.floor(Math.random() * 10000);
+                     if (!document.getElementById("loginName").value) document.getElementById("loginName").value = "Shark User";
+                     if (!document.getElementById("loginPassword").value) document.getElementById("loginPassword").value = "password";
+                     
+                     document.getElementById("loginSubmitBtn").innerHTML = "Sign In";
+                     document.getElementById("loginSubmitBtn").disabled = false;
+                     handleLogin();
+                 } else {
+                     throw new Error("HTTP " + response.status);
+                 }
+             } catch(e) {
+                 console.error("PKCE Error:", e);
+                 document.getElementById("loginSubmitBtn").innerHTML = "Sign In";
+                 document.getElementById("loginSubmitBtn").disabled = false;
+                 alert("Failed to connect to OpenRouter.");
+             }
+         }
+      }
+
+      if (pkceCode) {
+          processPkceCode(pkceCode);
+      } else if (storedUser) {
         try {
           currentUser = JSON.parse(storedUser);
           API_KEY = currentUser.apiKey;
