@@ -1691,33 +1691,101 @@
         }
       });
 
-      // TTS Overlay for Highlight
-      const ttsOverlay = document.createElement("div");
-      ttsOverlay.id = "ttsOverlay";
-      ttsOverlay.style.cssText = "display:none; position:fixed; bottom:120px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.85); color:#fff; padding:14px 24px; border-radius:16px; z-index:9999; font-size:1.5rem; font-weight:800; box-shadow:0 10px 30px rgba(0,0,0,0.4); text-align:center; max-width:90%; pointer-events:none; border:2px solid var(--accent-blue);";
-      document.body.appendChild(ttsOverlay);
+      // --- TTS with in-message word highlighting ---
+      let ttsActiveElement = null;
+      let ttsOriginalHTML = null;
 
-      async function playRecord(text) {
+      function ttsCleanup() {
+        if (ttsActiveElement && ttsOriginalHTML !== null) {
+          ttsActiveElement.innerHTML = ttsOriginalHTML;
+          ttsActiveElement = null;
+          ttsOriginalHTML = null;
+        }
+      }
+
+      async function playRecord(text, msgContentEl) {
         const cleanText = text.replace(/[*_#`]/g, '').replace(/!\[.*?\]\(.*?\)/g, '');
-        
+
+        // Stop any previous native TTS if available
         if (window.Capacitor && window.Capacitor.Plugins.TextToSpeech) {
           try { await window.Capacitor.Plugins.TextToSpeech.stop(); } catch(e){}
         }
 
         if (!('speechSynthesis' in window)) return;
         window.speechSynthesis.cancel();
+        ttsCleanup();
+
         const utterance = new SpeechSynthesisUtterance(cleanText);
-        utterance.rate = 1.15; // slightly slower for better read-along
-        
-        utterance.onstart = () => { ttsOverlay.style.display = "block"; ttsOverlay.innerHTML = '<i class="fas fa-volume-up"></i> ...'; };
-        utterance.onboundary = (event) => {
-          if (event.name === 'word') {
-            const word = cleanText.substring(event.charIndex, event.charIndex + event.charLength).trim();
-            if(word.length > 0) ttsOverlay.innerHTML = `<span style="color:#00e676;">${word}</span>`;
-          }
-        };
-        utterance.onend = () => { ttsOverlay.style.display = "none"; };
-        utterance.onerror = () => { ttsOverlay.style.display = "none"; };
+        utterance.rate = 1.15;
+
+        // If we have a reference to the message content element, highlight words inside it
+        if (msgContentEl) {
+          ttsActiveElement = msgContentEl;
+          ttsOriginalHTML = msgContentEl.innerHTML;
+
+          // Collect all text nodes
+          const allText = msgContentEl.innerText || msgContentEl.textContent || '';
+
+          utterance.onboundary = (event) => {
+            if (event.name === 'word' && ttsActiveElement) {
+              const spokenWord = cleanText.substring(event.charIndex, event.charIndex + event.charLength).trim();
+              if (!spokenWord || spokenWord.length === 0) return;
+
+              // Walk all text nodes to find and highlight this word occurrence
+              const walker = document.createTreeWalker(ttsActiveElement, NodeFilter.SHOW_TEXT, null, false);
+              let charCount = 0;
+              let node;
+              while (node = walker.nextNode()) {
+                const nodeText = node.textContent;
+                const cleanNodeText = nodeText.replace(/[*_#`]/g, '');
+                
+                // Check if this word falls within this text node range
+                if (charCount + cleanNodeText.length > event.charIndex) {
+                  // Find position within this node
+                  const localIndex = event.charIndex - charCount;
+                  // Find the actual word in the original node text
+                  const wordRegex = new RegExp(spokenWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+                  const match = nodeText.substring(localIndex).match(wordRegex);
+                  
+                  if (match) {
+                    const actualStart = localIndex + match.index;
+                    const before = nodeText.substring(0, actualStart);
+                    const word = nodeText.substring(actualStart, actualStart + match[0].length);
+                    const after = nodeText.substring(actualStart + match[0].length);
+
+                    // Remove old highlight
+                    const oldHL = ttsActiveElement.querySelector('.tts-highlight');
+                    if (oldHL) {
+                      oldHL.replaceWith(document.createTextNode(oldHL.textContent));
+                    }
+
+                    const span = document.createElement('span');
+                    span.className = 'tts-highlight';
+                    span.style.cssText = 'background:#ffffff; color:#00aaff; padding:1px 4px; border-radius:4px; font-weight:bold; transition:background 0.15s; box-shadow: 0 0 6px rgba(0,170,255,0.4);';
+                    span.textContent = word;
+
+                    const parent = node.parentNode;
+                    const beforeNode = document.createTextNode(before);
+                    const afterNode = document.createTextNode(after);
+
+                    parent.insertBefore(beforeNode, node);
+                    parent.insertBefore(span, node);
+                    parent.insertBefore(afterNode, node);
+                    parent.removeChild(node);
+
+                    // Scroll into view
+                    span.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }
+                  break;
+                }
+                charCount += cleanNodeText.length;
+              }
+            }
+          };
+
+          utterance.onend = () => { ttsCleanup(); };
+          utterance.onerror = () => { ttsCleanup(); };
+        }
 
         window.speechSynthesis.speak(utterance);
       }
@@ -2190,7 +2258,9 @@
           readBtn.className = "msg-action-btn";
           readBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
           readBtn.onclick = () => {
-            playRecord(content);
+            const wrapper = readBtn.closest('.msg-wrapper') || readBtn.closest('.msg-wrapper-bot');
+            const msgContentEl = wrapper ? wrapper.querySelector('.msg-content') : null;
+            playRecord(content, msgContentEl);
           };
           actionsDiv.appendChild(readBtn);
 
@@ -2796,7 +2866,10 @@ FORMATTING RULES (ALWAYS FOLLOW FOR EVERY RESPONSE):
           if (assistantText) {
             addPermanentMessage("assistant", assistantText, null, null, isAnsweringFile);
             isAnsweringFile = false;
-            if (ttsAutoEnabled) playRecord(assistantText);
+            if (ttsAutoEnabled) {
+              const lastMsg = document.getElementById('chat').querySelector('.msg.assistant:last-child .msg-content') || document.getElementById('chat').querySelector('.msg-wrapper-bot:last-child .msg-content');
+              playRecord(assistantText, lastMsg);
+            }
           } else {
             addPermanentMessage("assistant", "(empty response)");
           }
