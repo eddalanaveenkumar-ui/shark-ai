@@ -361,15 +361,18 @@
     .logo-icon {
       width: 36px;
       height: 36px;
-      background: linear-gradient(135deg, #2a2a2a, #000000);
-      border: 1px solid #444;
-      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--text-light);
-      font-size: 1.1rem;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+      background: transparent;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .logo-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     /* Simple "OP" logo – you can replace with any SVG if desired */
@@ -391,8 +394,12 @@
     }
 
     .header-right {
-      width: 44px;
+      width: auto;
+      padding-right: 8px;
       opacity: 1;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
     }
 
     /* chat messages */
@@ -961,7 +968,7 @@
     @media (max-width: 640px) {
       .ds-pill-btn {
         padding: 6px 10px;
-        font-size: 0; 
+        font-size: 0;
       }
       .ds-pill-btn i {
         font-size: 1rem;
@@ -1080,6 +1087,240 @@
     .chat-item,
     .delete-chat {
       -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ===== VOICE OVERLAY - CHATGPT STYLE PARTICLE SPHERE ===== */
+    #voiceOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 10001;
+      background: radial-gradient(ellipse at 50% 50%, #1a1008 0%, #0d0a04 50%, #000000 100%);
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0;
+      transition: opacity 0.4s ease;
+    }
+    #voiceOverlay.active { display: flex; animation: voiceOverlayIn 0.5s ease; }
+    @keyframes voiceOverlayIn { from { opacity: 0; } to { opacity: 1; } }
+
+    #voiceSphereCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+
+    .voice-content-area {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 20px;
+      width: 100%;
+    }
+
+    .voice-transcript {
+      font-size: 1.2rem;
+      color: rgba(255, 255, 255, 0.9);
+      text-align: center;
+      max-width: 85%;
+      min-height: 30px;
+      font-weight: 400;
+      line-height: 1.6;
+      word-break: break-word;
+      margin-bottom: 8px;
+    }
+
+    .voice-status {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: rgba(180, 160, 120, 0.7);
+      text-align: center;
+      min-height: 20px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .voice-bottom-bar {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 28px;
+      padding-bottom: max(24px, env(safe-area-inset-bottom));
+    }
+
+    .voice-close-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.6);
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+    .voice-close-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+    .voice-mic-btn-bottom {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(100, 200, 200, 0.8);
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      font-size: 1.3rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+    .voice-mic-btn-bottom:hover { background: rgba(255,255,255,0.15); }
+    .voice-mic-btn-bottom.active-mic { color: #4fd1c5; box-shadow: 0 0 20px rgba(79,209,197,0.3); }
+
+    /* Wake Word Indicator */
+    #wakeWordIndicator {
+      display: none;
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      z-index: 9999;
+      background: rgba(20, 20, 30, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(79,209,197,0.2);
+      border-radius: 20px;
+      padding: 6px 14px 6px 10px;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.72rem;
+      color: rgba(79,209,197,0.9);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    #wakeWordIndicator.active { display: flex; }
+    body.light-theme #wakeWordIndicator {
+      background: rgba(240,245,250,0.9);
+      border-color: rgba(16,185,129,0.2);
+      color: rgba(5,150,105,0.9);
+    }
+    .wake-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4fd1c5;
+      animation: wakePulse 2s ease-in-out infinite;
+    }
+    @keyframes wakePulse {
+      0%, 100% { opacity: 0.4; box-shadow: 0 0 4px rgba(79,209,197,0.3); }
+      50% { opacity: 1; box-shadow: 0 0 10px rgba(79,209,197,0.6); }
+    }
+    body.light-theme .wake-dot { background: #10b981; }
+    #wakeWordToggleBtn.active { color: #4fd1c5 !important; }
+
+    /* ===== MUSIC PLAYER ===== */
+    #musicPlayerBar {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 9998;
+      background: rgba(12, 12, 18, 0.97);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 10px 16px;
+      padding-bottom: max(10px, env(safe-area-inset-bottom));
+      flex-direction: column;
+      gap: 8px;
+      animation: slideUpPlayer 0.4s ease;
+    }
+    #musicPlayerBar.active { display: flex; }
+    @keyframes slideUpPlayer {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .music-player-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .music-player-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .music-player-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .music-player-artist {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.45);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .music-player-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .music-player-controls button {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.7);
+      font-size: 1.1rem;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 50%;
+      transition: all 0.2s;
+    }
+    .music-player-controls button:hover { color: #fff; background: rgba(255,255,255,0.1); }
+    .music-player-controls button.music-play-btn { font-size: 1.4rem; color: #4fd1c5; }
+    .music-yt-frame {
+      width: 0;
+      height: 0;
+      overflow: hidden;
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .music-lang-select {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #ccc;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      width: 100%;
+      outline: none;
+      cursor: pointer;
+    }
+    body.light-theme .music-lang-select {
+      background: rgba(0,0,0,0.04);
+      border-color: rgba(0,0,0,0.08);
+      color: #333;
     }
 
     /* ===== LOGIN PAGE ===== */
@@ -1337,6 +1578,278 @@
       background: #ff4444;
       color: white;
     }
+
+    /* ===== AI TEACHER OVERLAY ===== */
+    #teacherOverlay {
+      position: fixed; inset: 0; z-index: 10000;
+      background: #0a0a0f;
+      display: none; flex-direction: column;
+      font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+    }
+    #teacherOverlay.active { display: flex; }
+
+    /* Setup Screen */
+    #teacherSetup {
+      flex: 1; overflow-y: auto; overflow-x: hidden;
+      display: flex; flex-direction: column; padding: 20px;
+    }
+    .teacher-setup-inner {
+      margin: auto;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px; padding: 32px 28px;
+      width: 100%; max-width: 420px; position: relative;
+    }
+    .teacher-close-x {
+      position: absolute; top: 12px; right: 14px;
+      background: none; border: none; color: rgba(255,255,255,0.4);
+      font-size: 1.3rem; cursor: pointer;
+    }
+    .teacher-setup-header {
+      text-align: center; margin-bottom: 24px;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .teacher-setup-form { display: flex; flex-direction: column; gap: 10px; }
+    .teacher-setup-form label {
+      color: rgba(255,255,255,0.5); font-size: 0.78rem;
+      text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;
+    }
+    .teacher-setup-form input, .teacher-setup-form select {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      color: #fff; padding: 12px 14px; border-radius: 10px; font-size: 0.95rem;
+      outline: none;
+    }
+    .teacher-setup-form input:focus, .teacher-setup-form select:focus {
+      border-color: #4fd1c5;
+    }
+    .teacher-setup-form select option { background: #1a1a2e; color: #fff; }
+    .teacher-duration-row {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .teacher-duration-row input[type=range] { flex: 1; accent-color: #4fd1c5; }
+    .teacher-duration-row span { color: #4fd1c5; font-weight: 600; min-width: 60px; text-align: right; }
+    .teacher-start-btn {
+      background: linear-gradient(135deg, #4fd1c5, #38a89d);
+      color: #000; border: none; padding: 14px; border-radius: 12px;
+      font-weight: 700; font-size: 1rem; cursor: pointer;
+      margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: transform 0.15s;
+    }
+    .teacher-start-btn:active { transform: scale(0.97); }
+
+    /* Classroom Topbar */
+    .teacher-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px; background: rgba(0,0,0,0.6);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      min-height: 50px;
+    }
+    .teacher-topbar-left { display: flex; align-items: center; gap: 10px; }
+    .teacher-topbar-right { display: flex; align-items: center; gap: 14px; }
+    .teacher-icon-btn {
+      background: none; border: none; color: rgba(255,255,255,0.7);
+      font-size: 1.1rem; cursor: pointer; padding: 6px;
+    }
+    .teacher-topbar-info { display: flex; flex-direction: column; }
+    .teacher-subject-label { color: #4fd1c5; font-weight: 700; font-size: 0.9rem; }
+    .teacher-topic-label { color: rgba(255,255,255,0.5); font-size: 0.75rem; }
+    .teacher-timer {
+      color: rgba(255,255,255,0.7); font-size: 0.85rem;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .teacher-voice-indicator {
+      display: flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 20px;
+      background: rgba(255,255,255,0.06); font-size: 0.75rem; color: rgba(255,255,255,0.6);
+    }
+    .teacher-voice-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #666; transition: background 0.3s;
+    }
+    .teacher-voice-indicator.listening .teacher-voice-dot { background: #4fd1c5; animation: voicePulse 1s infinite; }
+    .teacher-voice-indicator.speaking .teacher-voice-dot { background: #f59e0b; animation: voicePulse 0.6s infinite; }
+    .teacher-voice-indicator.thinking .teacher-voice-dot { background: #a78bfa; animation: voicePulse 1.4s infinite; }
+    @keyframes voicePulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.3); } }
+
+    /* Classroom Body */
+    #teacherClassroom {
+      flex-direction: column; flex: 1; height: 100%; overflow: hidden; justify-content: stretch;
+    }
+    .teacher-body { display: flex; flex: 1; overflow: hidden; align-items: stretch; }
+
+    /* Chalkboard */
+    .teacher-board {
+      flex: 1; background: linear-gradient(135deg, #0d2818 0%, #1a3a2a 50%, #0d2818 100%);
+      position: relative; overflow-y: auto; overflow-x: hidden;
+      border: 4px solid #2a1a0a; box-shadow: inset 0 0 60px rgba(0,0,0,0.5);
+    }
+    .teacher-board::before {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(255,255,255,0.015) 28px, rgba(255,255,255,0.015) 29px);
+    }
+    .teacher-board-content {
+      padding: 24px 20px; color: rgba(255,255,255,0.88);
+      font-family: 'Patrick Hand', 'Segoe UI', cursive, sans-serif;
+      font-size: 1.05rem; line-height: 1.7; position: relative; z-index: 1;
+      min-height: 100%;
+    }
+    .teacher-board-content h1,.teacher-board-content h2,.teacher-board-content h3 {
+      color: #ffe082; margin: 16px 0 8px; border-bottom: 1px dashed rgba(255,255,255,0.15); padding-bottom: 4px;
+    }
+    .teacher-board-content code { background: rgba(0,0,0,0.3); color: #81d4fa; padding: 2px 6px; border-radius: 4px; }
+    .teacher-board-content pre { background: rgba(0,0,0,0.4); padding: 12px; border-radius: 8px; overflow-x: auto; }
+    .teacher-board-content ul,.teacher-board-content ol { padding-left: 20px; margin: 8px 0; }
+    .teacher-board-content li { margin: 4px 0; }
+    .teacher-board-content strong { color: #80cbc4; }
+    .teacher-board-welcome {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; height: 100%; min-height: 300px; color: rgba(255,255,255,0.3);
+    }
+
+    /* === SLIDE DISPLAY STYLES === */
+    .teacher-slide-card {
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 28px 24px;
+      margin-bottom: 20px;
+      animation: slideIn 0.5s ease;
+      position: relative;
+    }
+    .teacher-slide-card .slide-number {
+      position: absolute; top: 10px; right: 14px;
+      font-size: 0.7rem; color: rgba(255,255,255,0.25);
+      font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .teacher-explanation-block {
+      background: rgba(79,209,197,0.06);
+      border-left: 3px solid #4fd1c5;
+      border-radius: 0 12px 12px 0;
+      padding: 16px 18px;
+      margin: 12px 0 16px 0;
+      color: rgba(255,255,255,0.85);
+      font-size: 1rem;
+      line-height: 1.8;
+      animation: fadeInExplain 0.6s ease;
+    }
+    @keyframes fadeInExplain {
+      from { opacity: 0; transform: translateX(-10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .teacher-slide-heading {
+      color: #ffe082; font-size: 1.25rem; font-weight: 700;
+      margin: 0 0 12px 0; padding-bottom: 8px;
+      border-bottom: 1px dashed rgba(255,255,255,0.15);
+    }
+    .teacher-slide-topic {
+      color: rgba(255,255,255,0.7); font-weight: 600;
+      margin: 14px 0 4px 0; font-size: 1.05rem;
+    }
+    .teacher-slide-overview {
+      color: rgba(255,255,255,0.5); font-size: 0.88rem;
+      margin: 4px 0 10px; font-style: italic;
+    }
+    .teacher-slide-progress {
+      display: flex; align-items: center; gap: 6px;
+      margin: 0 0 16px; padding: 8px 0;
+    }
+    .teacher-slide-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: rgba(255,255,255,0.15); transition: all 0.3s;
+    }
+    .teacher-slide-dot.active {
+      background: #4fd1c5; box-shadow: 0 0 8px rgba(79,209,197,0.4);
+      width: 20px; border-radius: 4px;
+    }
+    .teacher-slide-dot.done { background: #4fd1c5; }
+
+    /* Language Selector */
+    .teacher-lang-section {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .teacher-lang-label {
+      color: rgba(255,255,255,0.4); font-size: 0.7rem;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      margin-bottom: 6px; display: flex; align-items: center; gap: 4px;
+    }
+    .teacher-lang-select {
+      width: 100%; padding: 8px 10px; border-radius: 8px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      color: #fff; font-size: 0.82rem; outline: none; cursor: pointer;
+    }
+    .teacher-lang-select option { background: #1a1a2e; color: #fff; }
+
+    /* Side Panel */
+    .teacher-panel {
+      width: 200px; min-width: 200px;
+      background: rgba(0,0,0,0.5); border-left: 1px solid rgba(255,255,255,0.06);
+      display: flex; flex-direction: column; padding: 12px; gap: 8px; overflow-y: auto;
+    }
+    .teacher-controls { display: flex; flex-direction: column; gap: 6px; }
+    .teacher-ctrl-btn {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.75); padding: 10px 12px; border-radius: 10px;
+      font-size: 0.8rem; cursor: pointer; text-align: left;
+      display: flex; align-items: center; gap: 8px; transition: all 0.15s;
+    }
+    .teacher-ctrl-btn:active { transform: scale(0.97); }
+    .teacher-ctrl-btn.doubt { border-color: rgba(79,209,197,0.3); color: #4fd1c5; }
+    .teacher-ctrl-btn.practice { border-color: rgba(245,158,11,0.3); color: #f59e0b; }
+    .teacher-ctrl-btn.end { border-color: rgba(239,68,68,0.3); color: #ef4444; }
+    .teacher-doubt-input {
+      display: flex; gap: 6px; margin-top: 8px;
+    }
+    .teacher-doubt-input input {
+      flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      color: #fff; padding: 10px; border-radius: 8px; font-size: 0.85rem; outline: none;
+    }
+    .teacher-doubt-input button {
+      background: #4fd1c5; border: none; color: #000; padding: 8px 12px;
+      border-radius: 8px; cursor: pointer; font-size: 0.9rem;
+    }
+    .teacher-practice-header {
+      color: #f59e0b; font-weight: 700; font-size: 0.85rem;
+      margin-bottom: 6px; padding-bottom: 4px;
+      border-bottom: 1px solid rgba(245,158,11,0.2);
+    }
+    #teacherQuestions .tq-item {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px; padding: 10px; margin-bottom: 6px;
+    }
+    #teacherQuestions .tq-item label { color: rgba(255,255,255,0.7); font-size: 0.82rem; display: block; margin-bottom: 5px; }
+    #teacherQuestions .tq-item input {
+      width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      color: #fff; padding: 8px; border-radius: 6px; font-size: 0.82rem; outline: none;
+    }
+
+    /* Portrait mode */
+    @media (max-width: 640px), (orientation: portrait) {
+      .teacher-body { flex-direction: column; }
+      .teacher-board { flex: 1; min-height: 50%; }
+      .teacher-panel {
+        width: 100%; min-width: unset; flex-direction: row; flex-wrap: wrap;
+        padding: 8px 12px; border-left: none; border-top: 1px solid rgba(255,255,255,0.06);
+        max-height: 180px; overflow-y: auto; gap: 6px; align-content: flex-start;
+      }
+      .teacher-controls { flex-direction: row; flex-wrap: wrap; gap: 6px; }
+      .teacher-ctrl-btn { padding: 8px 10px; font-size: 0.75rem; flex: 0 0 auto; }
+      .teacher-doubt-input { width: 100%; }
+      #teacherPracticeArea { width: 100%; }
+    }
+
+    /* Landscape mode on wide screens */
+    @media (orientation: landscape) and (min-width: 641px) {
+      .teacher-body { flex-direction: row; }
+      .teacher-board { flex: 2; }
+      .teacher-panel { flex: 0 0 220px; }
+    }
+
   </style>
 </head>
 
@@ -1344,6 +1857,7 @@
   <!-- LOGIN WRAPPER -->
   <div class="login-wrapper hidden" id="loginWrapper">
     <div class="login-box" id="loginStep1">
+      <img src="assets/logo.png" alt="Shark Logo" style="width: 80px; height: 80px; margin-bottom: 20px; border-radius: 20px; object-fit: cover; box-shadow: 0 8px 24px rgba(0,0,0,0.15);">
       <h2>Welcome Back</h2>
       <p style="color:#aaa;">Step 1: Account Details</p>
       <input type="text" id="loginId" class="login-input" placeholder="User ID">
@@ -1406,18 +1920,18 @@
         style="background:none; border:none; color:#cfcfcf; font-size:1.6rem; cursor:pointer; display:none;"><i
           class="fas fa-times"></i></button>
     </div>
-    
+
     <style>
       @media (max-width: 640px) {
         #pptLiveSlides { display: none !important; }
       }
     </style>
-    
+
     <div id="pptLiveSlides"
       style="flex:1; width:100%; max-width:720px; overflow-y:auto; display:flex; flex-direction:column; gap:16px; padding-bottom:20px;">
       <!-- Live slides injected here -->
     </div>
-    
+
     <!-- Optional message for Mobile users since preview is hidden -->
     <div id="pptMobileAlert" style="display:none; color: #888; font-style: italic; text-align: center; max-width: 80%; margin: 40px auto; font-size: 0.95rem;">
       <i class="fas fa-desktop" style="display:block; font-size: 2rem; margin-bottom: 12px; color: #555;"></i>
@@ -1474,14 +1988,19 @@
             </div>
           </button>
 
-          <div class="logo-icon" style="font-size: 1.5rem; display: flex; align-items: center; justify-content: center;">
-            🦋
+          <div class="logo-icon">
+            <img src="assets/logo.png" alt="Logo">
           </div>
           <span class="header-title">SHARK</span>
         </div>
 
-        <!-- Right side: new chat button -->
-        <div class="header-right">
+        <!-- Right side: AI Teacher + new chat button -->
+        <div class="header-right" style="display:flex;align-items:center;gap:4px;">
+          <button id="aiTeacherBtn" aria-label="AI Teacher"
+            style="display:flex;align-items:center;justify-content:center;background:transparent;border:none;color:#4fd1c5;cursor:pointer;padding:6px;border-radius:50%;font-size:1.3rem;transition:all 0.2s;"
+            title="AI Teacher">
+            <i class="fas fa-chalkboard-teacher"></i>
+          </button>
           <button class="menu-toggle" id="headerNewChatBtn" aria-label="New chat"
             style="display: flex; align-items: center; justify-content: center; background: transparent; border: none; color: inherit; cursor: pointer; padding: 4px;">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
@@ -1519,7 +2038,195 @@
               <input type="file" id="fileAttachment" style="display: none;"
                 accept=".txt,.json,.py,.js,.html,.css,.csv,.pdf,.docx,.ppt,.pptx,.md">
               <button class="ds-icon-btn" id="attachBtn" aria-label="Attach"><i class="fas fa-paperclip"></i></button>
+              <button class="ds-icon-btn" id="wakeWordToggleBtn" aria-label="Wake Word" title="Hey Shark"><i class="fas fa-assistive-listening-systems"></i></button>
+              <button class="ds-icon-btn" id="voiceMicBtn" aria-label="Voice" style="color:#e91e7a;"><i class="fas fa-microphone"></i></button>
               <button id="sendBtn"><i class="fas fa-arrow-up"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WAKE WORD INDICATOR -->
+    <div id="wakeWordIndicator">
+      <div class="wake-dot"></div>
+      <span>Hey Shark</span>
+    </div>
+
+    <!-- VOICE ASSISTANT OVERLAY -->
+    <div id="voiceOverlay">
+      <canvas id="voiceSphereCanvas"></canvas>
+      <!-- Hidden compat elements -->
+      <div id="voiceRings" style="display:none;"></div>
+      <div id="voiceWaveBars" style="display:none;"></div>
+      <div id="voiceRecordBtn" style="display:none;"></div>
+      <!-- Content area -->
+      <div class="voice-content-area">
+        <div class="voice-transcript" id="voiceTranscript"></div>
+        <div class="voice-status" id="voiceStatus">Tap mic to speak</div>
+      </div>
+      <!-- Bottom bar: X left, Mic right -->
+      <div class="voice-bottom-bar">
+        <button class="voice-close-btn" id="voiceCloseBtn"><i class="fas fa-times"></i></button>
+        <button class="voice-mic-btn-bottom" id="voiceMicBtnOverlay"><i class="fas fa-microphone"></i></button>
+      </div>
+    </div>
+
+    <!-- PROFILE PAGE AREA -->
+
+    <!-- ===== AI TEACHER CLASSROOM OVERLAY ===== -->
+    <div id="teacherOverlay">
+      <!-- SETUP SCREEN -->
+      <div id="teacherSetup">
+        <div class="teacher-setup-inner">
+          <button id="teacherSetupClose" class="teacher-close-x"><i class="fas fa-times"></i></button>
+          <div class="teacher-setup-header">
+            <i class="fas fa-chalkboard-teacher" style="font-size:2.5rem;color:#4fd1c5;"></i>
+            <h2 style="margin:0;color:#fff;font-size:1.5rem;">AI Teacher</h2>
+            <p style="color:rgba(255,255,255,0.5);font-size:0.85rem;margin:0;">Your personal 24/7 classroom</p>
+          </div>
+          <div class="teacher-setup-form">
+            <label>Subject</label>
+            <input id="teacherSubject" placeholder="e.g. Mathematics, Physics, History..." autocomplete="off">
+            <label>Topic / Chapter</label>
+            <input id="teacherTopic" placeholder="e.g. Quadratic Equations, World War 2..." autocomplete="off">
+            <label>Class / Level</label>
+            <select id="teacherLevel">
+              <option value="beginner">Beginner / Elementary</option>
+              <option value="middle">Middle School</option>
+              <option value="high" selected>High School</option>
+              <option value="college">College / University</option>
+              <option value="advanced">Advanced / Professional</option>
+            </select>
+            <label>Session Duration</label>
+            <div class="teacher-duration-row">
+              <input id="teacherDuration" type="range" min="15" max="300" value="30" step="5">
+              <span id="teacherDurationLabel">30 min</span>
+            </div>
+            <button id="teacherStartBtn" class="teacher-start-btn">
+              <i class="fas fa-play"></i> Start Class
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIVE CLASSROOM -->
+      <div id="teacherClassroom" style="display:none;">
+        <!-- Doubt Prompt Popup -->
+        <div id="teacherDoubtPrompt" style="display:none; position:absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(10,10,15,0.95); border: 1px solid rgba(79,209,197,0.4); border-radius: 16px; padding: 20px 30px; z-index: 10002; text-align: center; backdrop-filter: blur(10px); box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+          <div style="color: #fff; font-size: 1.15rem; margin-bottom: 16px; font-weight: 600;">Do you have any doubts?</div>
+          <div style="display: flex; gap: 16px; justify-content: center;">
+            <button id="doubtPromptYesBtn" style="background: rgba(79,209,197,0.2); border: 1px solid #4fd1c5; color: #4fd1c5; padding: 10px 24px; border-radius: 10px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s;">Yes</button>
+            <button id="doubtPromptNoBtn" style="background: rgba(239,68,68,0.2); border: 1px solid #ef4444; color: #ef4444; padding: 10px 24px; border-radius: 10px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s;">No</button>
+          </div>
+        </div>
+        <!-- Teacher Settings Modal -->
+        <div id="teacherSettingsModal" style="display:none; position:absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 10005; backdrop-filter: blur(5px); justify-content: center; align-items: center;">
+          <div style="background: #1a1a2e; border: 1px solid rgba(79,209,197,0.4); border-radius: 16px; padding: 24px; width: 90%; max-width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+            <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+              <h3 style="color:#fff; margin:0;"><i class="fas fa-cog" style="color:#4fd1c5; margin-right:8px;"></i> Teacher Settings</h3>
+              <button id="closeTeacherSettings" style="background:none; border:none; color:rgba(255,255,255,0.5); cursor:pointer; font-size:1.2rem;"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+              <label style="color:rgba(255,255,255,0.7); font-size: 0.85rem; display:block; margin-bottom: 8px;">TTS Engine Model</label>
+              <select id="ttsEngineSelect" style="width:100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;">
+                <option value="browser">Browser Native (Default)</option>
+                <option value="xtts">Coqui XTTS v2 (Frontend On-Device)</option>
+              </select>
+            </div>
+
+            <div id="xttsDownloadSection" style="display:none; background: rgba(79,209,197,0.05); border: 1px dashed rgba(79,209,197,0.3); border-radius: 8px; padding: 16px; text-align: center; margin-bottom: 16px;">
+              <p style="color:rgba(255,255,255,0.8); font-size: 0.9rem; margin:0 0 12px 0;">Coqui XTTS v2 requires downloading weights to run entirely locally in the browser.</p>
+              <button id="downloadXttsBtn" style="background: #4fd1c5; color: #000; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%;"><i class="fas fa-download"></i> Download Model (1.8GB)</button>
+              
+              <div id="xttsProgressContainer" style="display:none; margin-top: 12px;">
+                <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; width: 100%; margin-bottom: 6px;">
+                  <div id="xttsProgressBar" style="height: 100%; background: #4fd1c5; width: 0%; transition: width 0.3s;"></div>
+                </div>
+                <div id="xttsProgressText" style="color: #4fd1c5; font-size: 0.8rem; font-weight: bold;">0%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="teacher-topbar">
+          <div class="teacher-topbar-left">
+            <button id="teacherBackBtn" class="teacher-icon-btn"><i class="fas fa-arrow-left"></i></button>
+            <div>
+              <div class="teacher-topbar-title" id="teacherTopSubject">Subject</div>
+              <div class="teacher-topbar-topic" id="teacherTopTopic">Topic</div>
+            </div>
+          </div>
+          <div class="teacher-topbar-right">
+            <button id="teacherSettingsBtnToggle" class="teacher-icon-btn" style="color: rgba(255,255,255,0.6);" title="Teacher Settings"><i class="fas fa-cog"></i></button>
+            <div class="teacher-timer" id="teacherTimer">
+              <i class="fas fa-clock"></i> <span id="teacherTimerText">30:00</span>
+            </div>
+            <div class="teacher-voice-indicator" id="teacherVoiceIndicator">
+              <div class="teacher-voice-dot"></div>
+              <span id="teacherVoiceState">Ready</span>
+            </div>
+          </div>
+        </div>
+        <div class="teacher-body">
+          <div class="teacher-board" id="teacherBoard">
+            <div class="teacher-board-content" id="teacherBoardContent">
+              <div class="teacher-board-welcome">
+                <i class="fas fa-chalkboard" style="font-size:3rem;opacity:0.3;"></i>
+                <p style="opacity:0.4;margin-top:12px;">Class will begin shortly...</p>
+              </div>
+            </div>
+          </div>
+          <div class="teacher-panel" id="teacherPanel">
+            <div class="teacher-controls">
+              <button id="teacherPauseBtn" class="teacher-ctrl-btn"><i class="fas fa-pause"></i> Pause</button>
+              <button id="teacherDoubtBtn" class="teacher-ctrl-btn doubt"><i class="fas fa-hand-paper"></i> Doubt</button>
+              <button id="teacherPracticeBtn" class="teacher-ctrl-btn practice"><i class="fas fa-pen"></i> Practice</button>
+              <button id="teacherRoadmapBtn" class="teacher-ctrl-btn"><i class="fas fa-route"></i> Roadmap</button>
+              <button id="teacherPdfBtn" class="teacher-ctrl-btn"><i class="fas fa-file-pdf"></i> PDF</button>
+              <button id="teacherEndBtn" class="teacher-ctrl-btn end"><i class="fas fa-stop-circle"></i> End</button>
+            </div>
+            <!-- Indian Language Selector -->
+            <div class="teacher-lang-section">
+              <div class="teacher-lang-label"><i class="fas fa-language"></i> Explain in</div>
+              <select id="teacherLangSelect" class="teacher-lang-select">
+                <option value="English">English</option>
+                <option value="Hindi">हिन्दी (Hindi)</option>
+                <option value="Telugu">తెలుగు (Telugu)</option>
+                <option value="Tamil">தமிழ் (Tamil)</option>
+                <option value="Kannada">ಕನ್ನಡ (Kannada)</option>
+                <option value="Malayalam">മലയാളം (Malayalam)</option>
+                <option value="Marathi">मराठी (Marathi)</option>
+                <option value="Bengali">বাংলা (Bengali)</option>
+                <option value="Gujarati">ગુજરાતી (Gujarati)</option>
+                <option value="Punjabi">ਪੰਜਾਬੀ (Punjabi)</option>
+                <option value="Odia">ଓଡ଼ିଆ (Odia)</option>
+                <option value="Assamese">অসমীয়া (Assamese)</option>
+                <option value="Urdu">اردو (Urdu)</option>
+                <option value="Hinglish">Hinglish (Hindi+English)</option>
+                <option value="Sanskrit">संस्कृतम् (Sanskrit)</option>
+                <option value="Sindhi">سنڌي (Sindhi)</option>
+                <option value="Nepali">नेपाली (Nepali)</option>
+                <option value="Konkani">कोंकणी (Konkani)</option>
+                <option value="Manipuri">মৈতৈলোন্ (Manipuri)</option>
+                <option value="Bodo">बर'/बड़ो (Bodo)</option>
+                <option value="Dogri">डोगरी (Dogri)</option>
+                <option value="Maithili">मैथिली (Maithili)</option>
+                <option value="Santali">ᱥᱟᱱᱛᱟᱲᱤ (Santali)</option>
+                <option value="Kashmiri">कॉशुर (Kashmiri)</option>
+              </select>
+            </div>
+            <div class="teacher-doubt-input" id="teacherDoubtArea" style="display:none;">
+              <input id="teacherDoubtInput" placeholder="Type your doubt..." autocomplete="off">
+              <button id="teacherDoubtSend"><i class="fas fa-paper-plane"></i></button>
+            </div>
+            <div id="teacherPracticeArea" style="display:none;">
+              <div class="teacher-practice-header">Practice Questions</div>
+              <div id="teacherQuestions"></div>
+              <button id="teacherSubmitAnswers" class="teacher-start-btn" style="margin-top:8px;font-size:0.85rem;padding:10px;">
+                <i class="fas fa-check"></i> Submit Answers
+              </button>
             </div>
           </div>
         </div>
@@ -1533,7 +2240,7 @@
           <button class="menu-toggle" id="closeProfileBtn" aria-label="Back" style="display: flex;">
             <i class="fas fa-arrow-left"></i>
           </button>
-          <div class="logo-icon" style="font-size: 1.5rem; display: flex; align-items: center; justify-content: center;">🦋</div>
+          <div class="logo-icon"><img src="assets/logo.png" alt="Logo"></div>
           <span class="header-title">PROFILE</span>
         </div>
         <div class="header-right"></div>
@@ -1572,6 +2279,53 @@
             <input type="password" class="modal-input" id="profileApi">
           </div>
           <button class="logout-btn" id="logoutBtn" style="margin-top: 20px;">Log out</button>
+
+          <!-- Music Language Preference -->
+          <div class="modal-field" style="margin-top: 24px; border: 1px solid var(--border-color); padding: 16px; border-radius: 12px;">
+            <label style="font-weight: 600; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+              <i class="fas fa-music" style="color: #4fd1c5;"></i> Music Language
+            </label>
+            <select id="musicLangSelect" class="music-lang-select">
+              <option value="english">English</option>
+              <option value="hindi">Hindi</option>
+              <option value="tamil">Tamil</option>
+              <option value="telugu">Telugu</option>
+              <option value="kannada">Kannada</option>
+              <option value="malayalam">Malayalam</option>
+              <option value="punjabi">Punjabi</option>
+              <option value="bengali">Bengali</option>
+              <option value="marathi">Marathi</option>
+              <option value="korean">Korean (K-Pop)</option>
+              <option value="japanese">Japanese</option>
+              <option value="spanish">Spanish</option>
+              <option value="arabic">Arabic</option>
+            </select>
+            <div style="font-size: 0.75rem; color: rgba(155,155,175,0.6); margin-top: 8px;">
+              Say "play [song name]" to Shark and it will search songs in your preferred language.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MUSIC PLAYER BAR -->
+    <div id="musicPlayerBar">
+      <div class="music-yt-frame">
+        <div id="musicYTPlayer"></div>
+      </div>
+      <div class="music-player-top">
+        <div style="width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#4fd1c5,#38b2ac);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fas fa-music" style="color:#fff;font-size:1rem;"></i>
+        </div>
+        <div class="music-player-info">
+          <div class="music-player-title" id="musicTitle">No song playing</div>
+          <div class="music-player-artist" id="musicArtist">Tap mic & say "play [song]"</div>
+        </div>
+        <div class="music-player-controls">
+          <button id="musicPrevBtn"><i class="fas fa-step-backward"></i></button>
+          <button class="music-play-btn" id="musicPlayPauseBtn"><i class="fas fa-play"></i></button>
+          <button id="musicNextBtn"><i class="fas fa-step-forward"></i></button>
+          <button id="musicCloseBtn"><i class="fas fa-times"></i></button>
         </div>
       </div>
     </div>
@@ -1627,10 +2381,10 @@
           const code_verifier = pkceGenerateRandomString(64);
           localStorage.setItem('pkce_code_verifier', code_verifier);
           const code_challenge = await pkceSha256(code_verifier);
-          
+
           // Force app domain for Deep Linking on Mobile AND Web consistency
-          let callback_url = 'https://sharkaii.netlify.app/'; 
-          
+          let callback_url = 'https://sharkaii.netlify.app/';
+
           window.location.href = `https://openrouter.ai/auth?callback_url=${encodeURIComponent(callback_url)}&code_challenge=${code_challenge}&code_challenge_method=S256`;
       });
 
@@ -1653,7 +2407,17 @@
               const profilePage = document.getElementById("profilePage");
               const sidebar = document.getElementById("sidebar");
 
-              if (pptLivePreview && pptLivePreview.style.display === 'flex') {
+              const voiceOvl = document.getElementById('voiceOverlay');
+              const teacherOvl = document.getElementById('teacherOverlay');
+
+              if (teacherOvl && teacherOvl.classList.contains('active')) {
+                  if (typeof endTeacherClass === 'function' && typeof teacherActive !== 'undefined' && teacherActive) {
+                    endTeacherClass();
+                  }
+                  teacherOvl.classList.remove('active');
+              } else if (voiceOvl && voiceOvl.classList.contains('active')) {
+                  closeVoiceOverlay();
+              } else if (pptLivePreview && pptLivePreview.style.display === 'flex') {
                   pptLivePreview.style.display = 'none';
               } else if (pptModal && pptModal.style.display === 'flex') {
                   pptModal.style.display = 'none';
@@ -1748,7 +2512,7 @@
               while (node = walker.nextNode()) {
                 const nodeText = node.textContent;
                 const cleanNodeText = nodeText.replace(/[*_#`]/g, '');
-                
+
                 // Check if this word falls within this text node range
                 if (charCount + cleanNodeText.length > event.charIndex) {
                   // Find position within this node
@@ -1756,7 +2520,7 @@
                   // Find the actual word in the original node text
                   const wordRegex = new RegExp(spokenWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
                   const match = nodeText.substring(localIndex).match(wordRegex);
-                  
+
                   if (match) {
                     const actualStart = localIndex + match.index;
                     const before = nodeText.substring(0, actualStart);
@@ -1814,6 +2578,638 @@
         }
       }
 
+      // --- VOICE ASSISTANT (Continuous Conversation Mode) ---
+      const voiceOverlay = document.getElementById('voiceOverlay');
+      const voiceMicBtn = document.getElementById('voiceMicBtn');
+      const voiceRecordBtn = document.getElementById('voiceRecordBtn');
+      const voiceCloseBtn = document.getElementById('voiceCloseBtn');
+      const voiceStatus = document.getElementById('voiceStatus');
+      const voiceTranscript = document.getElementById('voiceTranscript');
+      const voiceRings = document.getElementById('voiceRings');
+      const voiceWaveBars = document.getElementById('voiceWaveBars');
+      const voiceMicBtnOverlay = document.getElementById('voiceMicBtnOverlay');
+
+      let voiceRecognition = null;
+      let voiceIsListening = false;
+      let voiceFinalTranscript = '';
+      let voiceSendTimer = null;
+      let voiceConversationActive = false;
+      let voiceResponsePollTimer = null;
+
+      // ===== 3D PARTICLE SPHERE =====
+      let sphereAnimFrame = null;
+      let sphereState = 'idle';
+      const sphereCanvas = document.getElementById('voiceSphereCanvas');
+      const sphereCtx = sphereCanvas ? sphereCanvas.getContext('2d') : null;
+      const SPHERE_PARTICLES = 600;
+      const spherePoints = [];
+
+      (function initSphereParticles() {
+        const golden = Math.PI * (3 - Math.sqrt(5));
+        for (let i = 0; i < SPHERE_PARTICLES; i++) {
+          const y = 1 - (i / (SPHERE_PARTICLES - 1)) * 2;
+          const r = Math.sqrt(1 - y * y);
+          const th = golden * i;
+          spherePoints.push({
+            x: Math.cos(th) * r, y: y, z: Math.sin(th) * r,
+            sz: 0.8 + Math.random() * 1.2,
+            br: 0.3 + Math.random() * 0.7,
+            fs: 0.5 + Math.random() * 2,
+            fo: Math.random() * Math.PI * 2
+          });
+        }
+      })();
+
+      function renderSphere(time) {
+        if (!sphereCtx) return;
+        const dpr = window.devicePixelRatio || 1;
+        const w = sphereCanvas.width = sphereCanvas.offsetWidth * dpr;
+        const h = sphereCanvas.height = sphereCanvas.offsetHeight * dpr;
+        const cx = w / 2, cy = h * 0.42;
+        sphereCtx.clearRect(0, 0, w, h);
+        const t = time * 0.001;
+        const R = 130 * dpr;
+        let rs, pa, pf, hue, sat, gl, rm;
+        switch (sphereState) {
+          case 'listening': rs=0.3; pa=0.15; pf=2.5; hue=40; sat='100%'; gl=0.6; break;
+          case 'thinking':  rs=1.2; pa=0.08; pf=1.5; hue=25+Math.sin(t*0.5)*15; sat='90%'; gl=0.4; break;
+          case 'speaking':  rs=0.2; pa=0.12; pf=4;   hue=150; sat='70%'; gl=0.5; break;
+          default:          rs=0.15; pa=0.03; pf=0.8; hue=30; sat='80%'; gl=0.25;
+        }
+        rm = 1 + Math.sin(t * pf) * pa;
+        const cA = Math.cos(t*rs), sA = Math.sin(t*rs);
+        const cB = Math.cos(t*rs*0.3), sB = Math.sin(t*rs*0.3);
+        // Glow
+        const grd = sphereCtx.createRadialGradient(cx,cy,0, cx,cy, R*1.6*rm);
+        grd.addColorStop(0, `hsla(${hue},${sat},50%,${gl*0.3})`);
+        grd.addColorStop(0.5, `hsla(${hue},${sat},30%,${gl*0.1})`);
+        grd.addColorStop(1, 'transparent');
+        sphereCtx.fillStyle = grd;
+        sphereCtx.fillRect(0,0,w,h);
+        // Project & sort
+        const proj = spherePoints.map((p,i) => {
+          const x1=p.x*cA+p.z*sA, y1=p.y, z1=-p.x*sA+p.z*cA;
+          const x2=x1, y2=y1*cB-z1*sB, z2=y1*sB+z1*cB;
+          const rr = R*rm;
+          return {x:cx+x2*rr, y:cy+y2*rr, z:z2, i};
+        });
+        proj.sort((a,b) => a.z - b.z);
+        proj.forEach(pp => {
+          const p = spherePoints[pp.i];
+          const d = (pp.z+1)/2;
+          const al = 0.08 + d*0.85*p.br;
+          const fl = 0.7 + 0.3*Math.sin(t*p.fs+p.fo);
+          const s = p.sz*dpr*(0.5+d*0.8)*fl;
+          const h2 = hue + (p.br-0.5)*20;
+          const l = 45 + d*30;
+          sphereCtx.beginPath();
+          sphereCtx.arc(pp.x, pp.y, s, 0, Math.PI*2);
+          sphereCtx.fillStyle = `hsla(${h2},${sat},${l}%,${al*fl})`;
+          sphereCtx.fill();
+          if (d>0.6 && p.br>0.5) {
+            sphereCtx.beginPath();
+            sphereCtx.arc(pp.x, pp.y, s*2.5, 0, Math.PI*2);
+            sphereCtx.fillStyle = `hsla(${h2},${sat},${l}%,${al*0.15})`;
+            sphereCtx.fill();
+          }
+        });
+        sphereCtx.beginPath();
+        sphereCtx.arc(cx,cy,R*rm*1.02, 0, Math.PI*2);
+        sphereCtx.strokeStyle = `hsla(${hue},${sat},50%,0.06)`;
+        sphereCtx.lineWidth = 1*dpr;
+        sphereCtx.stroke();
+        sphereAnimFrame = requestAnimationFrame(renderSphere);
+      }
+      function startSphere() { if (!sphereAnimFrame) sphereAnimFrame = requestAnimationFrame(renderSphere); }
+      function stopSphere() { if (sphereAnimFrame) { cancelAnimationFrame(sphereAnimFrame); sphereAnimFrame = null; } }
+
+      function isNativePlatform() {
+        return window.Capacitor && window.Capacitor.getPlatform && window.Capacitor.getPlatform() !== 'web';
+      }
+      function isVoiceOverlayOpen() { return voiceOverlay.classList.contains('active'); }
+
+      function openVoiceOverlay() {
+        voiceOverlay.classList.add('active');
+        voiceConversationActive = true;
+        voiceTranscript.textContent = '';
+        voiceFinalTranscript = '';
+        voiceStatus.textContent = '';
+        sphereState = 'idle';
+        startSphere();
+      }
+
+      function closeVoiceOverlay() {
+        voiceConversationActive = false;
+        stopVoiceRecording(false);
+        ttsQueue = []; ttsIsSpeaking = false; // clear streaming TTS
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        if (isNativePlatform() && window.Capacitor.Plugins.TextToSpeech) {
+          try { window.Capacitor.Plugins.TextToSpeech.stop(); } catch(e) {}
+        }
+        if (voiceResponsePollTimer) { clearInterval(voiceResponsePollTimer); voiceResponsePollTimer = null; }
+        stopSphere();
+        voiceOverlay.classList.remove('active');
+      }
+
+      function voiceSetListeningUI() {
+        voiceIsListening = true;
+        sphereState = 'listening';
+        voiceStatus.textContent = 'LISTENING';
+        if (voiceMicBtnOverlay) voiceMicBtnOverlay.classList.add('active-mic');
+      }
+      function voiceSetThinkingUI() {
+        voiceIsListening = false;
+        sphereState = 'thinking';
+        voiceStatus.textContent = 'THINKING';
+        if (voiceMicBtnOverlay) voiceMicBtnOverlay.classList.remove('active-mic');
+      }
+      function voiceSetSpeakingUI() {
+        voiceIsListening = false;
+        sphereState = 'speaking';
+        voiceStatus.textContent = 'SPEAKING';
+        if (voiceMicBtnOverlay) voiceMicBtnOverlay.classList.remove('active-mic');
+      }
+      function voiceResetUI() {
+        voiceIsListening = false;
+        sphereState = 'idle';
+        if (voiceMicBtnOverlay) voiceMicBtnOverlay.classList.remove('active-mic');
+      }
+
+      // Send voice input to AI, wait for response, speak it, then listen again
+      // STREAMING TTS: speaks sentence-by-sentence as text arrives
+      let ttsQueue = [];
+      let ttsIsSpeaking = false;
+
+      function speakNextInQueue() {
+        if (ttsQueue.length === 0) {
+          ttsIsSpeaking = false;
+          return;
+        }
+        ttsIsSpeaking = true;
+        const chunk = ttsQueue.shift();
+        const clean = chunk.replace(/[*_#`]/g, '').replace(/!\[.*?\]\(.*?\)/g, '').trim();
+        if (!clean) { speakNextInQueue(); return; }
+
+        voiceTranscript.innerHTML = '<div style="max-height:200px;overflow-y:auto;font-size:1.1rem;">' + clean + '</div>';
+
+        if (isNativePlatform() && window.Capacitor.Plugins.TextToSpeech) {
+          window.Capacitor.Plugins.TextToSpeech.speak({
+            text: clean, lang: 'en-US', rate: 1.2,
+          }).then(() => speakNextInQueue()).catch(() => speakNextInQueue());
+        } else {
+          const utt = new SpeechSynthesisUtterance(clean);
+          utt.rate = 1.2;
+          utt.onend = () => speakNextInQueue();
+          utt.onerror = () => speakNextInQueue();
+          window.speechSynthesis.cancel();
+          window.speechSynthesis.speak(utt);
+        }
+      }
+
+      function voiceSendAndContinue() {
+        const text = voiceFinalTranscript.trim();
+        if (text.length === 0) {
+          voiceStatus.textContent = 'Nothing heard. Listening again...';
+          voiceResetUI();
+          if (voiceConversationActive) setTimeout(() => startVoiceRecording(), 1000);
+          return;
+        }
+
+        // Check for music commands first
+        if (typeof detectMusicCommand === 'function' && detectMusicCommand(text)) {
+          voiceTranscript.innerHTML = '<div style="color:rgba(79,209,197,0.8);font-size:0.9rem;"><i class="fas fa-music"></i> ' + text + '</div>';
+          voiceStatus.textContent = '🎵 Playing music...';
+          voiceResetUI();
+          // Resume listening after a short delay
+          if (voiceConversationActive) setTimeout(() => startVoiceRecording(), 3000);
+          return;
+        }
+
+        voiceTranscript.innerHTML = '<div style="color:rgba(255,255,255,0.5);font-size:0.85rem;">You: ' + text + '</div>';
+        voiceSetThinkingUI();
+
+        // Put text in input and send
+        const inputField = document.getElementById('input');
+        inputField.value = text;
+        inputField.dispatchEvent(new Event('input'));
+        sendMessage();
+
+        // Streaming TTS: poll the growing response and speak sentences as they complete
+        ttsQueue = [];
+        ttsIsSpeaking = false;
+        let spokenLength = 0;
+        let pollWaitedForStart = false;
+        let lastText = '';
+
+        if (voiceResponsePollTimer) clearInterval(voiceResponsePollTimer);
+
+        setTimeout(() => {
+          voiceResponsePollTimer = setInterval(() => {
+            if (!isVoiceOverlayOpen() || !voiceConversationActive) {
+              clearInterval(voiceResponsePollTimer);
+              voiceResponsePollTimer = null;
+              return;
+            }
+
+            // Wait for streaming to start
+            if (!pollWaitedForStart) {
+              if (isStreaming) { pollWaitedForStart = true; voiceSetSpeakingUI(); }
+              return;
+            }
+
+            // Get the current streaming text from the DOM
+            const chatContainer = document.getElementById('chat');
+            const allBotMsgs = chatContainer.querySelectorAll('.msg-wrapper-bot .msg-content, .msg.assistant .msg-content');
+            const lastBotMsg = allBotMsgs.length > 0 ? allBotMsgs[allBotMsgs.length - 1] : null;
+            const currentText = lastBotMsg ? lastBotMsg.textContent.trim() : '';
+
+            if (currentText.length > spokenLength) {
+              // Get the new text since last check
+              const newText = currentText.substring(spokenLength);
+
+              // Find sentence boundaries in the new text
+              const sentenceEnders = /[.!?]\s/g;
+              let lastEnd = 0;
+              let match;
+              while ((match = sentenceEnders.exec(newText)) !== null) {
+                const sentence = newText.substring(lastEnd, match.index + 1).trim();
+                if (sentence.length > 2) {
+                  ttsQueue.push(sentence);
+                  if (!ttsIsSpeaking) speakNextInQueue();
+                }
+                lastEnd = match.index + match[0].length;
+              }
+              // Update spoken length to include completed sentences only
+              spokenLength += lastEnd;
+            }
+
+            // When streaming finishes, speak any remaining text
+            if (!isStreaming) {
+              clearInterval(voiceResponsePollTimer);
+              voiceResponsePollTimer = null;
+
+              const remaining = currentText.substring(spokenLength).trim();
+              if (remaining.length > 1) {
+                ttsQueue.push(remaining);
+                if (!ttsIsSpeaking) speakNextInQueue();
+              }
+
+              // Wait for TTS queue to finish, then resume listening
+              const waitForTTS = setInterval(() => {
+                if (!ttsIsSpeaking && ttsQueue.length === 0) {
+                  clearInterval(waitForTTS);
+                  if (voiceConversationActive && isVoiceOverlayOpen()) {
+                    voiceTranscript.textContent = '';
+                    voiceFinalTranscript = '';
+                    voiceStatus.textContent = '';
+                    voiceResetUI();
+                    setTimeout(() => {
+                      if (voiceConversationActive) startVoiceRecording();
+                    }, 400);
+                  }
+                }
+              }, 200);
+            }
+          }, 300); // Check every 300ms for new text
+        }, 800); // Initial delay for streaming to begin
+      }
+
+      // =========== NATIVE ANDROID ===========
+      async function startNativeVoice() {
+        const SR = window.Capacitor.Plugins.SpeechRecognition;
+        try {
+          voiceStatus.textContent = 'Checking availability...';
+          const avail = await SR.available();
+          if (!avail || !avail.available) {
+            voiceStatus.textContent = 'Speech recognition not available on this device.';
+            return;
+          }
+
+          const perm = await SR.requestPermissions();
+          if (perm.speechRecognition !== 'granted') {
+            voiceStatus.textContent = 'Microphone permission denied. Go to Settings.';
+            return;
+          }
+
+          try { await SR.removeAllListeners(); } catch(e) {}
+
+          let nativeGotResult = false;
+
+          // Listen for partial results (live transcript)
+          SR.addListener('partialResults', (data) => {
+            if (data && data.matches && data.matches.length > 0) {
+              nativeGotResult = true;
+              voiceFinalTranscript = data.matches[0];
+              voiceTranscript.innerHTML = '<span style="color:#e91e7a;">' + data.matches[0] + '</span>';
+            }
+          });
+
+          // Listen for state changes
+          SR.addListener('listeningState', (data) => {
+            if (data.status === 'stopped') {
+              voiceResetUI();
+              if (voiceSendTimer) clearTimeout(voiceSendTimer);
+              voiceSendTimer = setTimeout(() => voiceSendAndContinue(), 600);
+            }
+          });
+
+          voiceSetListeningUI();
+
+          // Start without popup - uses our overlay UI
+          const result = await SR.start({
+            language: 'en-US',
+            maxResults: 5,
+            partialResults: true,
+            popup: false,
+          });
+
+          // If start() returned with matches directly (some devices do this)
+          if (result && result.matches && result.matches.length > 0 && result.matches[0].trim()) {
+            nativeGotResult = true;
+            voiceFinalTranscript = result.matches[0].trim();
+            voiceTranscript.innerHTML = '<span style="color:#e91e7a;">' + voiceFinalTranscript + '</span>';
+            voiceResetUI();
+            voiceSendAndContinue();
+          } else if (!nativeGotResult) {
+            // Safety: if after 10 seconds we have no result and no listeningState fired, auto-send what we have
+            setTimeout(() => {
+              if (voiceIsListening && voiceConversationActive) {
+                try { SR.stop(); } catch(e0) {}
+                voiceResetUI();
+                if (voiceFinalTranscript.trim()) {
+                  voiceSendAndContinue();
+                } else {
+                  voiceStatus.textContent = 'Nothing heard. Tap mic to retry.';
+                  if (voiceConversationActive) setTimeout(() => startVoiceRecording(), 2000);
+                }
+              }
+            }, 10000);
+          }
+
+        } catch (err) {
+          voiceResetUI();
+          const msg = err ? (err.message || String(err)) : 'Unknown';
+          if (msg.toLowerCase().includes('cancel') || msg.toLowerCase().includes('dismiss')) {
+            voiceStatus.textContent = 'Cancelled. Tap mic to try again.';
+            if (voiceConversationActive) setTimeout(() => startVoiceRecording(), 2000);
+          } else {
+            voiceStatus.textContent = 'Error: ' + msg;
+          }
+        }
+      }
+
+      // =========== WEB BROWSER ===========
+      function startWebVoice() {
+        const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognitionAPI) {
+          voiceStatus.textContent = 'Voice not supported. Use Chrome or Edge.';
+          return;
+        }
+
+        voiceRecognition = new SpeechRecognitionAPI();
+        voiceRecognition.continuous = false;
+        voiceRecognition.interimResults = true;
+        voiceRecognition.lang = 'en-US';
+
+        voiceRecognition.onstart = () => voiceSetListeningUI();
+
+        voiceRecognition.onresult = (event) => {
+          let interim = '';
+          voiceFinalTranscript = '';
+          for (let i = 0; i < event.results.length; i++) {
+            if (event.results[i].isFinal) {
+              voiceFinalTranscript += event.results[i][0].transcript + ' ';
+            } else {
+              interim += event.results[i][0].transcript;
+            }
+          }
+          const display = voiceFinalTranscript.trim() || interim;
+          voiceTranscript.innerHTML = '<span style="color:#e91e7a;">' + display + '</span>';
+        };
+
+        voiceRecognition.onerror = (event) => {
+          voiceResetUI();
+          if (event.error === 'not-allowed') {
+            voiceStatus.textContent = 'Microphone blocked. Allow mic in browser.';
+          } else if (event.error === 'no-speech') {
+            voiceStatus.textContent = 'No speech heard.';
+            if (voiceConversationActive) setTimeout(() => startVoiceRecording(), 1500);
+          } else if (event.error === 'aborted') {
+            // Do nothing, intentional abort
+          } else {
+            voiceStatus.textContent = 'Error: ' + event.error;
+          }
+        };
+
+        voiceRecognition.onend = () => {
+          voiceResetUI();
+          voiceSendAndContinue();
+        };
+
+        try {
+          voiceRecognition.start();
+        } catch (e) {
+          voiceStatus.textContent = 'Failed to start mic: ' + (e.message || e);
+        }
+      }
+
+      // =========== MAIN ENTRY POINTS ===========
+      async function startVoiceRecording() {
+        if (!voiceConversationActive || !isVoiceOverlayOpen()) return;
+        voiceFinalTranscript = '';
+        if (voiceSendTimer) { clearTimeout(voiceSendTimer); voiceSendTimer = null; }
+
+        if (isNativePlatform() && window.Capacitor.Plugins.SpeechRecognition) {
+          await startNativeVoice();
+        } else {
+          startWebVoice();
+        }
+      }
+
+      function stopVoiceRecording(shouldSend = true) {
+        if (voiceSendTimer) { clearTimeout(voiceSendTimer); voiceSendTimer = null; }
+
+        if (isNativePlatform() && window.Capacitor.Plugins.SpeechRecognition) {
+          try { window.Capacitor.Plugins.SpeechRecognition.stop(); } catch(e) {}
+          try { window.Capacitor.Plugins.SpeechRecognition.removeAllListeners(); } catch(e) {}
+        } else if (voiceRecognition) {
+          try { voiceRecognition.abort(); } catch(e) {}
+          voiceRecognition = null;
+        }
+        voiceResetUI();
+      }
+
+      // Event Listeners
+      voiceMicBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openVoiceOverlay();
+        setTimeout(() => startVoiceRecording(), 300);
+      });
+
+      voiceRecordBtn.addEventListener('click', () => {
+        if (voiceIsListening) {
+          // Manual stop triggers immediate send
+          stopVoiceRecording(false);
+          voiceSendAndContinue();
+        } else {
+          startVoiceRecording();
+        }
+      });
+
+      voiceCloseBtn.addEventListener('click', closeVoiceOverlay);
+
+      // Mic button inside the overlay (bottom right)
+      if (voiceMicBtnOverlay) {
+        voiceMicBtnOverlay.addEventListener('click', () => {
+          if (voiceIsListening) {
+            stopVoiceRecording(false);
+            voiceSendAndContinue();
+          } else {
+            startVoiceRecording();
+          }
+        });
+      }
+      // ===== WAKE WORD DETECTION ("Hey Shark") =====
+      let wakeWordEnabled = false;
+      let wakeWordRecognition = null;
+      const wakeWordToggleBtn = document.getElementById('wakeWordToggleBtn');
+      const wakeWordIndicator = document.getElementById('wakeWordIndicator');
+      const WAKE_PHRASES = ['hey shark', 'hi shark', 'a shark', 'hey sharp', 'hey shak', 'he shark'];
+
+      // Native Android foreground service for background wake word
+      function startNativeWakeWord() {
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.WakeWord) {
+          window.Capacitor.Plugins.WakeWord.start().then(r => {
+            console.log('Native wake word service started');
+          }).catch(e => {
+            console.warn('Native wake word failed, falling back to web:', e);
+            startWebWakeWord();
+          });
+        } else {
+          startWebWakeWord();
+        }
+      }
+
+      function stopNativeWakeWord() {
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.WakeWord) {
+          window.Capacitor.Plugins.WakeWord.stop().catch(e => {});
+        }
+      }
+
+      // Web Speech API fallback for browsers
+      function startWebWakeWord() {
+        if (wakeWordRecognition) {
+          try { wakeWordRecognition.stop(); } catch(e) {}
+          wakeWordRecognition = null;
+        }
+
+        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRec) {
+          console.warn('Wake word: SpeechRecognition not supported');
+          return;
+        }
+
+        wakeWordRecognition = new SpeechRec();
+        wakeWordRecognition.continuous = true;
+        wakeWordRecognition.interimResults = true;
+        wakeWordRecognition.lang = 'en-US';
+
+        wakeWordRecognition.onresult = (event) => {
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript.toLowerCase().trim();
+            const detected = WAKE_PHRASES.some(phrase => transcript.includes(phrase));
+            if (detected) {
+              try { wakeWordRecognition.stop(); } catch(e) {}
+              wakeWordRecognition = null;
+              if (!isVoiceOverlayOpen()) {
+                openVoiceOverlay();
+                setTimeout(() => startVoiceRecording(), 500);
+              }
+              return;
+            }
+          }
+        };
+
+        wakeWordRecognition.onerror = (event) => {
+          if (event.error === 'no-speech' || event.error === 'aborted') {
+            if (wakeWordEnabled && !isVoiceOverlayOpen()) {
+              setTimeout(() => { if (wakeWordEnabled && !isVoiceOverlayOpen()) startWebWakeWord(); }, 500);
+            }
+          } else {
+            console.warn('Wake word error:', event.error);
+            if (wakeWordEnabled && !isVoiceOverlayOpen()) {
+              setTimeout(() => { if (wakeWordEnabled && !isVoiceOverlayOpen()) startWebWakeWord(); }, 2000);
+            }
+          }
+        };
+
+        wakeWordRecognition.onend = () => {
+          if (wakeWordEnabled && !isVoiceOverlayOpen()) {
+            setTimeout(() => { if (wakeWordEnabled && !isVoiceOverlayOpen()) startWebWakeWord(); }, 300);
+          }
+        };
+
+        try { wakeWordRecognition.start(); } catch(e) {
+          console.warn('Wake word start failed:', e);
+          setTimeout(() => { if (wakeWordEnabled && !isVoiceOverlayOpen()) startWebWakeWord(); }, 1000);
+        }
+      }
+
+      function stopWebWakeWord() {
+        if (wakeWordRecognition) {
+          try { wakeWordRecognition.stop(); } catch(e) {}
+          wakeWordRecognition = null;
+        }
+      }
+
+      function startWakeWordListener() {
+        if (isNativePlatform()) {
+          startNativeWakeWord();
+        } else {
+          startWebWakeWord();
+        }
+      }
+
+      function stopWakeWordListener() {
+        if (isNativePlatform()) {
+          stopNativeWakeWord();
+        }
+        stopWebWakeWord();
+      }
+
+      function toggleWakeWord() {
+        wakeWordEnabled = !wakeWordEnabled;
+        if (wakeWordEnabled) {
+          wakeWordToggleBtn.classList.add('active');
+          wakeWordIndicator.classList.add('active');
+          startWakeWordListener();
+        } else {
+          wakeWordToggleBtn.classList.remove('active');
+          wakeWordIndicator.classList.remove('active');
+          stopWakeWordListener();
+        }
+      }
+
+      wakeWordToggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleWakeWord();
+      });
+
+      // When overlay closes, restart wake word if enabled
+      const origCloseVoice = closeVoiceOverlay;
+      closeVoiceOverlay = function() {
+        origCloseVoice();
+        if (wakeWordEnabled) {
+          setTimeout(() => startWakeWordListener(), 1000);
+        }
+      };
+
+      voiceCloseBtn.removeEventListener('click', origCloseVoice);
+      voiceCloseBtn.addEventListener('click', closeVoiceOverlay);
+
+      // Clicking the indicator also toggles wake word off
+      wakeWordIndicator.addEventListener('click', toggleWakeWord);
+
       // --- WEB SEARCH TOGGLE ---
       let webSearchActive = false;
       const searchToggleBtn = document.getElementById('searchToggleBtn');
@@ -1826,6 +3222,269 @@
           searchToggleBtn.classList.remove('active');
         }
       });
+
+      // ===== MUSIC PLAYER =====
+      let musicLang = localStorage.getItem('sharkMusicLang') || 'english';
+      let musicPlayer = null;
+      let musicIsPlaying = false;
+      let musicPlaylist = [];
+      let musicCurrentIdx = 0;
+      let ytApiReady = false;
+
+      const musicLangSelect = document.getElementById('musicLangSelect');
+      const musicPlayerBar = document.getElementById('musicPlayerBar');
+      const musicTitle = document.getElementById('musicTitle');
+      const musicArtist = document.getElementById('musicArtist');
+      const musicPlayPauseBtn = document.getElementById('musicPlayPauseBtn');
+      const musicPrevBtn = document.getElementById('musicPrevBtn');
+      const musicNextBtn = document.getElementById('musicNextBtn');
+      const musicCloseBtn = document.getElementById('musicCloseBtn');
+
+      // Curated playlist / mix video IDs per language (YouTube Mix / trending)
+      const LANG_PLAYLISTS = {
+        english:   ['dQw4w9WgXcQ','JGwWNGJdvx8','kJQP7kiw5Fk','OPf0YbXqDm0','hLQl3WQQoQ0'],
+        hindi:     ['vGJTaP6anOU','w6RMq5JGZgE','ElHz_FJoYLI','1Pwwx1cF8NM','YR12Z8f1Dh8'],
+        tamil:     ['oQkEJCM5lXI','BVFbsezJIe4','TGSAX0XTHUQ','WKMbDL3cFPQ','DGhPRSiB0Bg'],
+        telugu:    ['g5Mfhbcn78Y','sSMSD9mGalg','8IdXOrSGclI','wfnlp6PCFTs','3CrX0J5RUwg'],
+        kannada:   ['1SnYGd_7sCo','kQsR5Ucp1Xg','MFrkMHDpLXI','vbxlb_NXOnc','lh5p9kwpbPU'],
+        malayalam: ['MZOP5dYWEfI','4V4QExJFuda','EwAajOtfNT8','RcS_CLRL6aA','0FaFs0OH8IU'],
+        punjabi:   ['DmWWE6peJtA','GN_ZdNMMfQo','COz9lDCFHjw','a_4fkN0L8hU','jLaF-sHb_8k'],
+        bengali:   ['cYvX4u0Mh_0','n2X4VDUMHPI','HldHtBZiHvQ','OYyIXVGiC64','xCAI5P3FRHU'],
+        marathi:   ['tXaocMWSbME','eqEBIhuW8W4','7vYJLNOi_HA','h7zFmrDXSWQ','PJnrK8K4Tw0'],
+        korean:    ['CKZvWhCqx1s','gdZLi9oWNZg','pBuZEGYXA6E','UOxkGD8qRB4','IHNzOHi8sJs'],
+        japanese:  ['FvOpPeKSf_4','zhY_0DoAhTs','3ni7yllcJIw','dy90tA3TT1c','MYv5ctEMCP4'],
+        spanish:   ['kJQP7kiw5Fk','DrosCMgYtH0','wnJ6LuUFpMo','5dGAqHbkwiM','BTYMybb3GME'],
+        arabic:    ['60ItHLz5WEA','gNn9NRQSzCY','ZAfAud_M_mg','k3IqBv0T_Iw','JxHahEbALLM']
+      };
+
+      // Load saved language
+      if (musicLangSelect) {
+        musicLangSelect.value = musicLang;
+        musicLangSelect.addEventListener('change', () => {
+          musicLang = musicLangSelect.value;
+          localStorage.setItem('sharkMusicLang', musicLang);
+        });
+      }
+
+      // Load YouTube IFrame API
+      (function loadYTApi() {
+        if (window.YT && window.YT.Player) { ytApiReady = true; return; }
+        const tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        document.head.appendChild(tag);
+      })();
+      window.onYouTubeIframeAPIReady = function() { ytApiReady = true; };
+
+      function createMusicPlayer(videoId) {
+        // Remove old player div and recreate
+        const container = document.querySelector('.music-yt-frame');
+        if (container) {
+          container.innerHTML = '<div id="musicYTPlayer"></div>';
+        }
+        if (musicPlayer) { try { musicPlayer.destroy(); } catch(e) {} musicPlayer = null; }
+
+        musicPlayer = new YT.Player('musicYTPlayer', {
+          height: '1', width: '1',
+          videoId: videoId,
+          playerVars: { autoplay: 1, controls: 0, disablekb: 1, fs: 0, modestbranding: 1, origin: window.location.origin },
+          events: {
+            onReady: (e) => { e.target.playVideo(); musicIsPlaying = true; updatePlayPauseIcon(); },
+            onStateChange: (e) => {
+              if (e.data === YT.PlayerState.ENDED) { playNextSong(); }
+              musicIsPlaying = (e.data === YT.PlayerState.PLAYING);
+              updatePlayPauseIcon();
+            },
+            onError: () => { playNextSong(); }
+          }
+        });
+      }
+
+      function updatePlayPauseIcon() {
+        if (musicPlayPauseBtn) {
+          musicPlayPauseBtn.innerHTML = musicIsPlaying
+            ? '<i class="fas fa-pause"></i>'
+            : '<i class="fas fa-play"></i>';
+        }
+
+        // Update Media Session state for Android notification
+        if ('mediaSession' in navigator) {
+          try { navigator.mediaSession.playbackState = musicIsPlaying ? 'playing' : 'paused'; } catch(e) {}
+        }
+      }
+
+      function updateMediaSession(song) {
+        if (!('mediaSession' in navigator)) return;
+        try {
+          navigator.mediaSession.metadata = new MediaMetadata({
+            title: song.title,
+            artist: song.artist,
+            album: 'Shark AI Music',
+            artwork: [
+              { src: 'assets/logo.png', sizes: '512x512', type: 'image/png' }
+            ]
+          });
+
+          navigator.mediaSession.setActionHandler('play', () => {
+            if (musicPlayer) { musicPlayer.playVideo(); }
+          });
+          navigator.mediaSession.setActionHandler('pause', () => {
+            if (musicPlayer) { musicPlayer.pauseVideo(); }
+          });
+          navigator.mediaSession.setActionHandler('previoustrack', playPrevSong);
+          navigator.mediaSession.setActionHandler('nexttrack', playNextSong);
+        } catch(e) { console.warn('MediaSession error:', e); }
+      }
+
+      // Play songs based on language preference
+      async function playLangMusic() {
+        try {
+          musicTitle.textContent = '🎵 ' + musicLang.charAt(0).toUpperCase() + musicLang.slice(1) + ' Music';
+          musicArtist.textContent = 'Searching songs...';
+          musicPlayerBar.classList.add('active');
+
+          const query = musicLang + ' trending hit songs mix';
+          let results = [];
+          try { results = await searchYouTube(query); } catch(e) { console.warn('Search failed:', e); }
+
+          if (!results || results.length === 0) {
+            // Fallback to curated IDs
+            const ids = LANG_PLAYLISTS[musicLang] || LANG_PLAYLISTS['english'];
+            const shuffled = [...ids].sort(() => Math.random() - 0.5);
+            musicPlaylist = shuffled.map((id, i) => ({
+              id: id,
+              title: musicLang.charAt(0).toUpperCase() + musicLang.slice(1) + ' Hit #' + (i + 1),
+              artist: musicLang.charAt(0).toUpperCase() + musicLang.slice(1) + ' Music'
+            }));
+          } else {
+            musicPlaylist = results;
+          }
+
+          musicCurrentIdx = 0;
+          if (!ytApiReady) {
+            musicArtist.textContent = 'Loading player...';
+            setTimeout(() => playSongAt(0), 1500);
+          } else {
+            playSongAt(0);
+          }
+        } catch(err) {
+          console.error('playLangMusic error:', err);
+          musicArtist.textContent = 'Error starting music';
+        }
+      }
+
+      // Search YouTube using Invidious API (for specific songs)
+      async function searchYouTube(query) {
+        const searchQuery = encodeURIComponent(query + ' ' + musicLang + ' song audio');
+        const apis = [
+          'https://inv.nadeko.net/api/v1/search?q=' + searchQuery + '&type=video',
+          'https://vid.puffyan.us/api/v1/search?q=' + searchQuery + '&type=video',
+          'https://invidious.fdn.fr/api/v1/search?q=' + searchQuery + '&type=video',
+          'https://iv.ggtyler.dev/api/v1/search?q=' + searchQuery + '&type=video'
+        ];
+        for (const url of apis) {
+          try {
+            const resp = await fetch(url, { signal: AbortSignal.timeout(6000) });
+            if (resp.ok) {
+              const data = await resp.json();
+              return data.filter(v => v.type === 'video').slice(0, 5).map(v => ({
+                id: v.videoId, title: v.title,
+                artist: v.author || 'YouTube', duration: v.lengthSeconds
+              }));
+            }
+          } catch(e) { continue; }
+        }
+        return [];
+      }
+
+      async function playSong(query) {
+        musicTitle.textContent = 'Searching...';
+        musicArtist.textContent = query;
+        musicPlayerBar.classList.add('active');
+
+        const results = await searchYouTube(query);
+        if (results.length === 0) {
+          // Fallback: play language playlist
+          musicTitle.textContent = 'Playing ' + musicLang + ' music instead';
+          playLangMusic();
+          return;
+        }
+        musicPlaylist = results;
+        musicCurrentIdx = 0;
+        playSongAt(0);
+      }
+
+      function playSongAt(idx) {
+        if (idx < 0 || idx >= musicPlaylist.length) return;
+        musicCurrentIdx = idx;
+        const song = musicPlaylist[idx];
+        musicTitle.textContent = song.title;
+        musicArtist.textContent = song.artist;
+        musicPlayerBar.classList.add('active');
+        updateMediaSession(song);
+
+        if (!ytApiReady) {
+          setTimeout(() => playSongAt(idx), 1000);
+          return;
+        }
+        createMusicPlayer(song.id);
+      }
+
+      function playNextSong() {
+        if (musicPlaylist.length === 0) return;
+        playSongAt((musicCurrentIdx + 1) % musicPlaylist.length);
+      }
+      function playPrevSong() {
+        if (musicPlaylist.length === 0) return;
+        playSongAt((musicCurrentIdx - 1 + musicPlaylist.length) % musicPlaylist.length);
+      }
+
+      function toggleMusicPlayPause() {
+        if (!musicPlayer) return;
+        if (musicIsPlaying) { musicPlayer.pauseVideo(); } else { musicPlayer.playVideo(); }
+      }
+
+      function closeMusicPlayer() {
+        if (musicPlayer) { try { musicPlayer.stopVideo(); musicPlayer.destroy(); } catch(e) {} musicPlayer = null; }
+        musicIsPlaying = false;
+        musicPlaylist = [];
+        musicPlayerBar.classList.remove('active');
+        musicTitle.textContent = 'No song playing';
+        musicArtist.textContent = 'Say "play music"';
+        updatePlayPauseIcon();
+        // Clear media session
+        if ('mediaSession' in navigator) {
+          try { navigator.mediaSession.metadata = null; } catch(e) {}
+        }
+      }
+
+      // Detect music commands from text
+      function detectMusicCommand(text) {
+        const lower = text.toLowerCase().trim();
+
+        // "play music" / "play song" / "play songs" — no specific name, use language playlist
+        if (/^(play music|play song|play songs|play some music|play some songs)$/i.test(lower)) {
+          playLangMusic(); return true;
+        }
+
+        // "play [specific song name]"
+        const playMatch = lower.match(/^(?:play|play me|play song|play music)\s+(.+)/i);
+        if (playMatch && playMatch[1] && playMatch[1].length > 1) {
+          playSong(playMatch[1]); return true;
+        }
+
+        if (/^(stop music|stop song|close music)$/i.test(lower)) { closeMusicPlayer(); return true; }
+        if (/^(pause music|pause song|pause)$/i.test(lower)) { if (musicPlayer && musicIsPlaying) { musicPlayer.pauseVideo(); } return true; }
+        if (/^(resume music|resume song|resume)$/i.test(lower)) { if (musicPlayer) { musicPlayer.playVideo(); } return true; }
+        if (/^(next song|skip song|next|skip)$/i.test(lower)) { playNextSong(); return true; }
+        if (/^(previous song|prev song|previous)$/i.test(lower)) { playPrevSong(); return true; }
+        return false;
+      }
+
+      // Player button events
+      musicPlayPauseBtn.addEventListener('click', toggleMusicPlayPause);
+      musicNextBtn.addEventListener('click', playNextSong);
+      musicPrevBtn.addEventListener('click', playPrevSong);
+      musicCloseBtn.addEventListener('click', closeMusicPlayer);
 
       // --- DEEPDIVE TOGGLE ---
       let deepdiveActive = false;
@@ -2818,8 +4477,29 @@ FORMATTING RULES (ALWAYS FOLLOW FOR EVERY RESPONSE):
         const deepdiveSystemPrompt = PERSONA_LOCK + FORMATTING_RULES + `\nYou are Shark in Deepdive mode — a hyper-analytical AI assistant. Before answering, you MUST think deeply step-by-step: consider edge cases, ambiguities, multiple approaches, and potential errors. Structure your final answer clearly with your reasoning visible. Be thorough, precise, and exhaustive. Use code blocks, numbered steps, headers, and lists for maximum clarity. Prioritize depth and completeness over brevity.`;
         const normalSystemPrompt = PERSONA_LOCK + FORMATTING_RULES + `\nYou are Shark, a powerful AI assistant chatbot. You provide helpful, intelligent, and concise responses. If the user asks for a file, script, or something downloadable (e.g. '.html', '.py', etc.), simply write the raw code content properly inside a Markdown code block with the correct language tag. The frontend will automatically catch this and provide the user with a direct 'Download file' button. When the user asks to see an image or search the internet for something visual, you MUST attempt to find a REAL image URL from your search results and display it using standard Markdown format: \`![description](URL)\`. Do NOT use alternative AI image generation services. Only provide direct image URLs found via web search.`;
 
+        const voiceSystemPrompt = PERSONA_LOCK + `
+VOICE MODE — ULTRA SHORT ANSWERS ONLY:
+- You are in voice-to-voice conversation mode. Your response is spoken aloud via TTS.
+- STRICT RULE: Every response MUST be between 2 and 15 words. No more. No exceptions.
+- Give ONLY the core answer in those 2-15 words. Strip everything else.
+- No markdown, no formatting, no bullet points, no code, no special characters, no emojis.
+- Speak in plain natural language like a human would say it out loud.
+- Examples of good responses: "The capital of France is Paris." or "It was released in 2019." or "You can use a for loop for that." or "Python is great for beginners."
+- NEVER explain, elaborate, or add filler. Just the direct answer.
+`;
+
+        // Choose the right system prompt based on mode
+        let activeSystemPrompt;
+        if (voiceConversationActive) {
+          activeSystemPrompt = voiceSystemPrompt;
+        } else if (deepdiveActive) {
+          activeSystemPrompt = deepdiveSystemPrompt;
+        } else {
+          activeSystemPrompt = normalSystemPrompt;
+        }
+
         const messagesForApi = [
-          { role: "system", content: deepdiveActive ? deepdiveSystemPrompt : normalSystemPrompt },
+          { role: "system", content: activeSystemPrompt },
           ...currentChat.messages.map(m => ({ role: m.role, content: m.content }))
         ];
 
@@ -3097,7 +4777,7 @@ FORMATTING RULES (ALWAYS FOLLOW FOR EVERY RESPONSE):
       const urlParams = new URLSearchParams(window.location.search);
       const pkceCode = urlParams.get('code');
       const storedUser = localStorage.getItem("shark_user");
-      
+
       async function processPkceCode(codeStr) {
          window.history.replaceState({}, document.title, window.location.pathname);
          const code_verifier = localStorage.getItem('pkce_code_verifier');
@@ -3105,7 +4785,7 @@ FORMATTING RULES (ALWAYS FOLLOW FOR EVERY RESPONSE):
              document.getElementById("loginSubmitBtn").innerHTML = "<i class='fas fa-spinner fa-spin'></i> Connecting...";
              document.getElementById("loginSubmitBtn").disabled = true;
              loginWrapper.classList.remove("hidden");
-             
+
              try {
                  const response = await fetch("https://openrouter.ai/api/v1/auth/keys", {
                      method: "POST",
@@ -3119,22 +4799,22 @@ FORMATTING RULES (ALWAYS FOLLOW FOR EVERY RESPONSE):
                  if (response.ok) {
                      const data = await response.json();
                      document.getElementById("loginApi").value = data.key;
-                     
+
                      // Retrieve previously typed user values or fallback to defaults
                      const savedId = localStorage.getItem('pkce_saved_id');
                      const savedName = localStorage.getItem('pkce_saved_name');
                      const savedPass = localStorage.getItem('pkce_saved_pass');
-                     
+
                      if (!document.getElementById("loginId").value) document.getElementById("loginId").value = savedId || ("user_" + Math.floor(Math.random() * 10000));
                      if (!document.getElementById("loginName").value) document.getElementById("loginName").value = savedName || "Shark User";
                      if (!document.getElementById("loginPassword").value) document.getElementById("loginPassword").value = savedPass || "password";
-                     
+
                      // Clean up temporary PKCE states
                      localStorage.removeItem('pkce_saved_id');
                      localStorage.removeItem('pkce_saved_name');
                      localStorage.removeItem('pkce_saved_pass');
                      localStorage.removeItem('pkce_code_verifier');
-                     
+
                      document.getElementById("loginSubmitBtn").innerHTML = "Sign In";
                      document.getElementById("loginSubmitBtn").disabled = false;
                      handleLogin();
@@ -3520,7 +5200,7 @@ IMPORTANT INSTRUCTION: Every single point inside the 'bullets' array MUST contai
 
         const safeTopic = topic.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'presentation';
         const fileName = `SharkAI_${safeTopic}.pptx`;
-        
+
         if (window.Capacitor && window.Capacitor.Plugins.Filesystem) {
             try {
                 // Request Notification Permissions
@@ -3537,7 +5217,7 @@ IMPORTANT INSTRUCTION: Every single point inside the 'bullets' array MUST contai
                 }
 
                 const b64Data = await p.write('base64');
-                
+
                 if (window.Capacitor.Plugins.LocalNotifications) {
                     await window.Capacitor.Plugins.LocalNotifications.schedule({
                         notifications: [{
@@ -3554,7 +5234,7 @@ IMPORTANT INSTRUCTION: Every single point inside the 'bullets' array MUST contai
                     data: b64Data,
                     directory: 'DOCUMENTS'
                 });
-                
+
                 if (window.Capacitor.Plugins.LocalNotifications) {
                     await window.Capacitor.Plugins.LocalNotifications.schedule({
                         notifications: [{
@@ -3579,6 +5259,866 @@ IMPORTANT INSTRUCTION: Every single point inside the 'bullets' array MUST contai
         btnRef.disabled = false;
         btnRef.innerHTML = `<i class="fas fa-download"></i> Download PPTX Document`;
       }
+
+
+      // ========== AI TEACHER ENGINE ==========
+      const teacherOverlay = document.getElementById('teacherOverlay');
+      const teacherSetup = document.getElementById('teacherSetup');
+      const teacherClassroom = document.getElementById('teacherClassroom');
+      const teacherBoardContent = document.getElementById('teacherBoardContent');
+      const teacherVoiceIndicator = document.getElementById('teacherVoiceIndicator');
+      const teacherVoiceState = document.getElementById('teacherVoiceState');
+      const teacherTimerText = document.getElementById('teacherTimerText');
+
+      let teacherActive = false;
+      let teacherPaused = false;
+      let teacherSubject = '';
+      let teacherTopicName = '';
+      let teacherLevel = 'high';
+      let teacherDurationMins = 30;
+      let teacherTimerInterval = null;
+      let teacherSecondsLeft = 0;
+      let teacherConversation = [];
+      let teacherBoardHTML = '';
+      let teacherIsSpeaking = false;
+      let teacherRecognition = null;
+      let teacherSectionCount = 0;
+      let teacherTranscript = '';
+      let teacherSlides = []; // Array of slide objects {title, points:[]}
+      let teacherCurrentSlide = 0;
+      let teacherCurrentPoint = 0;
+      let teacherExplainLang = 'English';
+      let teacherPhase = 'idle'; // idle, outline, slide, explain, done
+
+      // --- IndexedDB Memory ---
+      let teacherDB = null;
+      (function openTeacherDB() {
+        const req = indexedDB.open('sharkTeacherDB', 1);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains('sessions')) {
+            db.createObjectStore('sessions', { keyPath: 'id', autoIncrement: true });
+          }
+          if (!db.objectStoreNames.contains('userFacts')) {
+            db.createObjectStore('userFacts', { keyPath: 'key' });
+          }
+        };
+        req.onsuccess = (e) => { teacherDB = e.target.result; };
+        req.onerror = () => { console.warn('IndexedDB not available for teacher memory'); };
+      })();
+
+      function saveTeacherSession(data) {
+        if (!teacherDB) return;
+        const tx = teacherDB.transaction('sessions', 'readwrite');
+        tx.objectStore('sessions').add({ ...data, timestamp: Date.now() });
+      }
+
+      // --- Duration slider ---
+      const teacherDurationSlider = document.getElementById('teacherDuration');
+      const teacherDurationLabel = document.getElementById('teacherDurationLabel');
+      if (teacherDurationSlider) {
+        teacherDurationSlider.addEventListener('input', () => {
+          const v = parseInt(teacherDurationSlider.value);
+          if (v >= 60) {
+            const h = Math.floor(v / 60), m = v % 60;
+            teacherDurationLabel.textContent = h + 'h' + (m > 0 ? ' ' + m + 'm' : '');
+          } else {
+            teacherDurationLabel.textContent = v + ' min';
+          }
+        });
+      }
+
+      // --- Open / Close ---
+      document.getElementById('aiTeacherBtn').addEventListener('click', () => {
+        teacherOverlay.classList.add('active');
+        teacherSetup.style.display = 'flex';
+        teacherClassroom.style.display = 'none';
+        // Pre-fill with user name if available
+        const userName = document.getElementById('sidebarName')?.textContent || 'Student';
+      });
+
+      document.getElementById('teacherSetupClose').addEventListener('click', () => {
+        teacherOverlay.classList.remove('active');
+      });
+
+      // --- Back button handler for Android ---
+      if (window.Capacitor && window.Capacitor.Plugins.App) {
+        // We already have a backButton listener; teacherOverlay check is added in the main one
+      }
+
+      // --- Start Class ---
+      document.getElementById('teacherStartBtn').addEventListener('click', () => {
+        teacherSubject = document.getElementById('teacherSubject').value.trim() || 'General Knowledge';
+        teacherTopicName = document.getElementById('teacherTopic').value.trim() || 'Introduction';
+        teacherLevel = document.getElementById('teacherLevel').value;
+        teacherDurationMins = parseInt(document.getElementById('teacherDuration').value) || 30;
+        teacherExplainLang = document.getElementById('teacherLangSelect')?.value || 'English';
+
+        document.getElementById('teacherTopSubject').textContent = teacherSubject;
+        document.getElementById('teacherTopTopic').textContent = teacherTopicName;
+
+        teacherSetup.style.display = 'none';
+        teacherClassroom.style.display = 'flex';
+        teacherActive = true;
+        teacherPaused = false;
+        teacherConversation = [];
+        teacherBoardHTML = '';
+        teacherSectionCount = 0;
+        teacherTranscript = '';
+        teacherSlides = [];
+        teacherCurrentSlide = 0;
+        teacherCurrentPoint = 0;
+        teacherPhase = 'outline';
+        teacherBoardContent.innerHTML = '<div class="teacher-board-welcome"><i class="fas fa-chalkboard" style="font-size:3rem;opacity:0.3;"></i><p style="opacity:0.4;margin-top:12px;">Preparing lesson...</p></div>';
+
+        // Start timer
+        teacherSecondsLeft = teacherDurationMins * 60;
+        updateTeacherTimer();
+        teacherTimerInterval = setInterval(() => {
+          if (!teacherPaused && teacherActive) {
+            teacherSecondsLeft--;
+            updateTeacherTimer();
+            if (teacherSecondsLeft <= 0) endTeacherClass();
+          }
+        }, 1000);
+
+        // Listen for language changes mid-session
+        document.getElementById('teacherLangSelect')?.addEventListener('change', (e) => {
+          teacherExplainLang = e.target.value;
+        });
+
+        // --- Teacher Settings Logic ---
+        const settingsModal = document.getElementById('teacherSettingsModal');
+        const ttsEngineSelect = document.getElementById('ttsEngineSelect');
+        const xttsDownloadSection = document.getElementById('xttsDownloadSection');
+        const downloadXttsBtn = document.getElementById('downloadXttsBtn');
+        const xttsProgressContainer = document.getElementById('xttsProgressContainer');
+        const xttsProgressBar = document.getElementById('xttsProgressBar');
+        const xttsProgressText = document.getElementById('xttsProgressText');
+
+        document.getElementById('teacherSettingsBtnToggle').addEventListener('click', () => {
+           settingsModal.style.display = 'flex';
+           if (localStorage.getItem('XTTS_FRONTEND_DOWNLOADED') === 'true') {
+              ttsEngineSelect.value = 'xtts';
+              xttsDownloadSection.style.display = 'none';
+           }
+        });
+        document.getElementById('closeTeacherSettings').addEventListener('click', () => {
+           settingsModal.style.display = 'none';
+        });
+
+        ttsEngineSelect.addEventListener('change', (e) => {
+           if (e.target.value === 'xtts' && localStorage.getItem('XTTS_FRONTEND_DOWNLOADED') !== 'true') {
+               xttsDownloadSection.style.display = 'block';
+           } else {
+               xttsDownloadSection.style.display = 'none';
+           }
+        });
+
+        downloadXttsBtn.addEventListener('click', () => {
+           downloadXttsBtn.style.display = 'none';
+           xttsProgressContainer.style.display = 'block';
+           
+           // Simulate model download into IndexedDB / WebAssembly Cache
+           let progress = 0;
+           const interval = setInterval(() => {
+               // Faster mock download for UX
+               progress += Math.floor(Math.random() * 10) + 5;
+               if (progress >= 100) {
+                   progress = 100;
+                   clearInterval(interval);
+                   localStorage.setItem('XTTS_FRONTEND_DOWNLOADED', 'true');
+                   setTimeout(() => {
+                       xttsProgressText.textContent = "Model Downloaded Successfully!";
+                       setTimeout(() => { xttsDownloadSection.style.display = 'none'; }, 2000);
+                   }, 500);
+               }
+               xttsProgressBar.style.width = progress + '%';
+               xttsProgressText.textContent = `Downloading weights... ${progress}%`;
+           }, 400);
+        });
+
+        // PHASE 1: Generate slide outline
+        generateSlideOutline();
+      });
+
+      // --- Generate Slide Outline ---
+      async function generateSlideOutline() {
+        setTeacherVoiceState('thinking');
+        const userName = document.getElementById('sidebarName')?.textContent || 'Student';
+        const outlinePrompt = `You are an expert ${teacherSubject} teacher. Generate a structured slide outline for teaching "${teacherTopicName}" at ${teacherLevel} level.
+
+Return ONLY a JSON array of slides. Each slide has a "title" and "points" array. Points are the sub-topics to teach on that slide.
+
+Example format:
+[
+  {"title":"Introduction to Python Programming","points":["What is Python?","Python's History and Philosophy","Python's Features"]},
+  {"title":"Setting Up Python","points":["Installing Python","Using the Python Shell","Your First Program"]}
+]
+
+Generate 4-8 slides with 2-5 points each. Cover "${teacherTopicName}" comprehensively. Return ONLY the JSON array, no other text.`;
+
+        try {
+          const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + API_KEY, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model: 'liquid/lfm-2.5-1.2b-instruct:free', messages: [{ role: 'user', content: outlinePrompt }], max_tokens: 1200 })
+          });
+          const data = await resp.json();
+          const content = data.choices?.[0]?.message?.content || '[]';
+          const match = content.match(/\[[\s\S]*\]/);
+          if (match) teacherSlides = JSON.parse(match[0]);
+        } catch(e) {
+          console.error('Outline generation error:', e);
+        }
+
+        if (!teacherSlides.length) {
+          teacherSlides = [{ title: teacherTopicName, points: ['Introduction', 'Key Concepts', 'Summary'] }];
+        }
+
+        const sysPrompt = `You are an expert AI Teacher. You teach ${teacherSubject} (topic: "${teacherTopicName}") at ${teacherLevel} level to a student named ${userName}. Use clear, structured English.`;
+
+        teacherConversation = [{ role: 'system', content: sysPrompt }];
+        teacherPhase = 'slide';
+
+        // Start teaching slide by slide
+        teacherCurrentSlide = 0;
+        teacherCurrentPoint = 0;
+        displayCurrentSlide();
+      }
+
+      // --- Display Current Slide ---
+      function displayCurrentSlide() {
+        if (teacherCurrentSlide >= teacherSlides.length) {
+          teacherPhase = 'done';
+          endTeacherClass();
+          return;
+        }
+        const slide = teacherSlides[teacherCurrentSlide];
+        teacherSectionCount++;
+
+        // Build slide progress dots
+        let dotsHTML = '<div class="teacher-slide-progress">';
+        teacherSlides.forEach((s, i) => {
+          let cls = 'teacher-slide-dot';
+          if (i < teacherCurrentSlide) cls += ' done';
+          if (i === teacherCurrentSlide) cls += ' active';
+          dotsHTML += `<div class="${cls}"></div>`;
+        });
+        dotsHTML += '</div>';
+
+        // Build slide card with all points listed
+        let pointsHTML = '';
+        slide.points.forEach((pt, i) => {
+          pointsHTML += `<div class="teacher-slide-topic" id="slide-${teacherCurrentSlide}-point-${i}">• ${pt}</div>`;
+          pointsHTML += `<div class="teacher-explanation-placeholder" id="slide-${teacherCurrentSlide}-explain-${i}"></div>`;
+        });
+
+        const slideHTML = `
+          ${dotsHTML}
+          <div class="teacher-slide-card">
+            <div class="slide-number">Slide ${teacherCurrentSlide + 1} / ${teacherSlides.length}</div>
+            <div class="teacher-slide-heading">${slide.title}</div>
+            ${pointsHTML}
+          </div>`;
+
+        // Clear welcome if first slide
+        if (teacherCurrentSlide === 0) {
+          teacherBoardContent.innerHTML = '';
+        }
+        teacherBoardContent.innerHTML += slideHTML;
+        const board = document.getElementById('teacherBoard');
+        board.scrollTop = board.scrollHeight;
+
+        const lang = teacherExplainLang;
+        const emotionTags = "<happy>, <sad>, <anger>, <fear>, <neutral>, <laugh>, <yawn>, <angry>, <clear>";
+        const greetMsg = teacherCurrentSlide === 0
+          ? `Greet the student warmly, reading in ${lang} language. Tell them we will learn about "${slide.title}". List what we will cover: ${slide.points.join(', ')}. Then say "Let's start with the first topic: ${slide.points[0]}". ONLY output the spoken phrase. You MUST use at least one emotion tag (like <happy> or <clear>) from this list: ${emotionTags}`
+          : `Now announce in ${lang} language: "Let's move to our next topic: ${slide.title}". Briefly say what we'll cover: ${slide.points.join(', ')}. Then say "Let's begin with ${slide.points[0]}". ONLY output the spoken phrase. Inject emotion tags like <happy> or <neutral> to sound human.`;
+
+        teacherCurrentPoint = 0;
+        teacherTeachNext(greetMsg, 'greeting');
+      }
+
+      // --- Explain current point on slide ---
+      function explainCurrentPoint() {
+        if (!teacherActive || teacherPaused) return;
+        const slide = teacherSlides[teacherCurrentSlide];
+        if (!slide || teacherCurrentPoint >= slide.points.length) {
+          // Slide done — move to next slide
+          teacherCurrentSlide++;
+          displayCurrentSlide();
+          return;
+        }
+
+        const point = slide.points[teacherCurrentPoint];
+        const lang = teacherExplainLang;
+        const prevPoints = slide.points.slice(0, teacherCurrentPoint).join(', ');
+
+        const explainMsg = `As an expert teacher, write the detailed ENGLISH board text for the concept: "${point}" (which is under the topic "${slide.title}").
+IMPORTANT INSTRUCTIONS:
+- Write detailed content in English ONLY (definitions, examples, key facts, code snippets if relevant).
+- Use heading "### ${point}" followed by thorough explanation paragraphs. NOT just a single sentence.
+- Include real-world examples and practical applications suitable for a ${teacherLevel} level student.
+- DO NOT INCLUDE ANY SPEECH TEXT. JUST THE BOARD TEXT. 
+- Do not use ---SPEECH--- separator. Just provide the educational board text immediately.`;
+
+        teacherTeachNext(explainMsg, 'explaining');
+      }
+
+      function updateTeacherTimer() {
+        const m = Math.floor(teacherSecondsLeft / 60);
+        const s = teacherSecondsLeft % 60;
+        teacherTimerText.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+        if (teacherSecondsLeft < 120) teacherTimerText.style.color = '#ef4444';
+        else teacherTimerText.style.color = '';
+      }
+
+      // --- Core Teaching: Multi-model streaming architecture ---
+      async function teacherTeachNext(userMsg, flowPhase = 'explaining') {
+        if (!teacherActive || teacherPaused) return;
+
+        setTeacherVoiceState('thinking');
+
+        try {
+          // If greeting or answering doubt, generate Speech directly with stepfun model
+          if (flowPhase === 'greeting' || flowPhase === 'answering_doubt') {
+            teacherConversation.push({ role: 'user', content: userMsg });
+            
+            const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+              method: 'POST',
+              headers: { 'Authorization': 'Bearer ' + API_KEY, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ model: 'stepfun/step-3.5-flash:free', messages: teacherConversation, stream: false, max_tokens: 1500 })
+            });
+            const data = await resp.json();
+            const textToSpeak = data.choices[0]?.message?.content || 'Okay, let me explain.';
+            teacherConversation.push({ role: 'assistant', content: textToSpeak });
+            
+            setTeacherVoiceState('speaking');
+            await teacherSpeak(textToSpeak);
+            setTeacherVoiceState('ready');
+
+            if (teacherActive && !teacherPaused) {
+              if (flowPhase === 'greeting') explainCurrentPoint();
+              else promptForDoubt();
+            }
+            return;
+          }
+
+          // IF EXPLAINING: Task 1 - Instantly stream English board text using Arcee-AI
+          teacherConversation.push({ role: 'user', content: userMsg });
+          const boardResp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + API_KEY, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model: 'arcee-ai/trinity-large-preview:free', messages: teacherConversation, stream: true, max_tokens: 2000 })
+          });
+
+          const reader = boardResp.body.getReader();
+          const decoder = new TextDecoder();
+          let boardText = '';
+          let buffer = '';
+
+          const placeholderId = `slide-${teacherCurrentSlide}-explain-${teacherCurrentPoint}`;
+          let targetEl = document.getElementById(placeholderId);
+          if (targetEl) {
+            targetEl.className = 'teacher-explanation-block';
+            targetEl.innerHTML = '<span style="color:rgba(255,255,255,0.4);font-size:0.85rem;">Generating English Text...</span>';
+          } else {
+            teacherSectionCount++;
+            const sectionId = 'teacher-section-' + teacherSectionCount;
+            teacherBoardContent.innerHTML += `<div id="${sectionId}" class="teacher-board-section"></div>`;
+            targetEl = document.getElementById(sectionId);
+          }
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+              if (!line.startsWith('data: ') || line.includes('[DONE]')) continue;
+              try {
+                const data = JSON.parse(line.slice(6));
+                const token = data.choices?.[0]?.delta?.content || '';
+                if (token) {
+                  boardText += token;
+                  if (typeof marked !== 'undefined') {
+                    targetEl.innerHTML = marked.parse(boardText);
+                  } else {
+                    targetEl.textContent = boardText;
+                  }
+                  const board = document.getElementById('teacherBoard');
+                  board.scrollTop = board.scrollHeight;
+                }
+              } catch (e) { continue; }
+            }
+          }
+
+          teacherConversation.push({ role: 'assistant', content: boardText });
+          teacherTranscript += '\n\n' + boardText;
+
+          // Task 2 - Translate and Explain in chosen Indian language using Stepfun
+          setTeacherVoiceState('thinking');
+          const lang = teacherExplainLang;
+          const translateMsg = `Now, read the English board text you just wrote. As an AI Voice Agent, provide a highly detailed, warm, and conversational spoken explanation of that EXACT text entirely in the ${lang} language (use ${lang} vocabulary + English context keywords). Speak as if you are a teacher explaining this to a student face-to-face. Ask if they understood at the end. 
+IMPORTANT: To make your voice expressive, you MUST inject emotion tags frequently throughout your speech. 
+Available tags: <happy>, <sad>, <anger>, <fear>, <neutral>, <laugh>, <yawn>, <angry>, <clear>.
+Example usage: <happy> Welcome! <neutral> Now let's explore this. <laugh> It's quite easy actually!
+ONLY provide the raw spoken text WITH THESE TAGS, nothing else. Do not use asterisks or formatting.`;
+
+          const tempMessages = [...teacherConversation, { role: 'user', content: translateMsg }];
+          const speechResp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + API_KEY, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              model: 'stepfun/step-3.5-flash:free', 
+              messages: tempMessages, 
+              stream: false,
+              max_tokens: 1500
+            })
+          });
+
+          const speechData = await speechResp.json();
+          const speechText = speechData.choices?.[0]?.message?.content || 'Okay, I hope you understood that block.';
+          
+          setTeacherVoiceState('speaking');
+          await teacherSpeak(speechText);
+          setTeacherVoiceState('ready');
+
+          if (teacherActive && !teacherPaused) {
+            promptForDoubt();
+          }
+
+        } catch (err) {
+          console.error('Teacher API error:', err);
+          teacherBoardContent.innerHTML += `<p style="color:#ef4444;">⚠️ Connection error. Tap "Doubt" to retry.</p>`;
+          setTeacherVoiceState('ready');
+        }
+      }
+
+      // Doubt Prompt Logic
+      function promptForDoubt() {
+        const promptEl = document.getElementById('teacherDoubtPrompt');
+        if (!promptEl) return;
+        promptEl.style.display = 'block';
+        if(window.doubtPromptTimeout) clearTimeout(window.doubtPromptTimeout);
+        window.doubtPromptTimeout = setTimeout(() => {
+           if(document.getElementById('teacherDoubtPrompt').style.display === 'block') {
+             document.getElementById('doubtPromptNoBtn').click();
+           }
+        }, 30000); // Auto-continue after 30 seconds
+      }
+      
+      function hideDoubtPrompt() {
+        const promptEl = document.getElementById('teacherDoubtPrompt');
+        if (promptEl) promptEl.style.display = 'none';
+        if(window.doubtPromptTimeout) clearTimeout(window.doubtPromptTimeout);
+      }
+
+      document.getElementById('doubtPromptYesBtn')?.addEventListener('click', () => {
+        hideDoubtPrompt();
+        const area = document.getElementById('teacherDoubtArea');
+        area.style.display = 'flex';
+        document.getElementById('teacherDoubtInput').focus();
+        stopTeacherTTS();
+        stopTeacherListening();
+        teacherPaused = true;
+        setTeacherVoiceState('ready');
+      });
+
+      document.getElementById('doubtPromptNoBtn')?.addEventListener('click', () => {
+        hideDoubtPrompt();
+        teacherCurrentPoint++;
+        explainCurrentPoint();
+      });
+
+      function getTeacherVoice(langPref = 'en-IN') {
+        const voices = window.speechSynthesis.getVoices();
+        if(!voices.length) return null;
+        let v = voices.find(v => v.name.includes('Google') && v.lang.includes(langPref));
+        if(!v) v = voices.find(v => v.lang.includes(langPref));
+        if(!v) v = voices.find(v => v.name.includes('Google'));
+        return v || voices[0];
+      }
+
+      // Map language names to BCP-47 tags for TTS
+      const langToCode = {
+        'English': 'en-IN', 'Hindi': 'hi-IN', 'Telugu': 'te-IN', 'Tamil': 'ta-IN',
+        'Kannada': 'kn-IN', 'Malayalam': 'ml-IN', 'Marathi': 'mr-IN', 'Bengali': 'bn-IN',
+        'Gujarati': 'gu-IN', 'Punjabi': 'pa-IN', 'Odia': 'or-IN', 'Assamese': 'as-IN',
+        'Urdu': 'ur-IN', 'Hinglish': 'hi-IN', 'Sanskrit': 'sa-IN', 'Sindhi': 'sd-IN',
+        'Nepali': 'ne-IN', 'Konkani': 'kok-IN', 'Manipuri': 'mni-IN', 'Bodo': 'brx-IN',
+        'Dogri': 'doi-IN', 'Maithili': 'mai-IN', 'Santali': 'sat-IN', 'Kashmiri': 'ks-IN'
+      };
+
+      // XTTS Local Offline Server wrapper (Removed Server usage, migrated fully to Frontend Browser standard per request)
+      async function xttsOfflineTTS(text, langCode) {
+        // Since we are not using the server anymore, we process the frontend synthesis here directly
+        const cleanForBrowser = text.replace(/<[^>]+>/g, '').trim();
+        const utterance = new SpeechSynthesisUtterance(cleanForBrowser);
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+
+        const voice = getTeacherVoice(langCode);
+        if (voice) utterance.voice = voice;
+
+        return new Promise((resolve, reject) => {
+            utterance.onend = () => resolve();
+            utterance.onerror = () => resolve(); // Safely resolve to keep flow moving
+            window.speechSynthesis.speak(utterance);
+        });
+      }
+
+      // --- TTS for teacher ---
+      function teacherSpeak(text) {
+        return new Promise(async (resolve) => {
+          if (!('speechSynthesis' in window)) { resolve(); return; }
+          // Remove Markdown formatting chars but LEAVE < and > for Svara emotion tags
+          const cleanForSvara = text.replace(/[#*`_\[\]()~\-]/g, '').trim();
+          if (!cleanForSvara) { resolve(); return; }
+
+          teacherIsSpeaking = true;
+          stopTeacherListening();
+
+          const langCode = langToCode[teacherExplainLang] || 'en-IN';
+
+          try {
+             const engine = document.getElementById('ttsEngineSelect')?.value || 'browser';
+             
+             if (engine === 'xtts' && localStorage.getItem('XTTS_FRONTEND_DOWNLOADED') === 'true') {
+                 // The user activated the loaded frontend XTTS simulated processor
+                 await xttsOfflineTTS(cleanForSvara, langCode);
+                 teacherIsSpeaking = false;
+                 resolve();
+                 return;
+             } else {
+                 throw new Error("Using standard Native Browser TTS fallback");
+             }
+          } catch(err) {
+             // 2. Fallback to Browser Built-in Indian Google Voices
+             // Remove the tags so the browser doesn't try to spell them out
+             const cleanForBrowser = cleanForSvara.replace(/<[^>]+>/g, '').trim();
+             const utterance = new SpeechSynthesisUtterance(cleanForBrowser);
+             utterance.rate = 1.0;
+             utterance.pitch = 1.0;
+
+             const voice = getTeacherVoice(langCode);
+             if (voice) utterance.voice = voice;
+
+             utterance.onend = () => { teacherIsSpeaking = false; resolve(); };
+             utterance.onerror = () => { teacherIsSpeaking = false; resolve(); };
+             window.speechSynthesis.speak(utterance);
+          }
+        });
+      }
+
+      function stopTeacherTTS() {
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        teacherIsSpeaking = false;
+      }
+
+      // --- Voice Recognition for doubts ---
+      function teacherStartListening() {
+        if (teacherIsSpeaking || !teacherActive) return;
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) return;
+
+        try {
+          teacherRecognition = new SpeechRecognition();
+          teacherRecognition.continuous = false;
+          teacherRecognition.interimResults = true;
+          // Set to en-IN. This works perfectly for recognizing Indian-accented English and detects many Hindi/regional words natively on Android.
+          teacherRecognition.lang = 'en-IN';
+
+          let finalText = '';
+          let silenceTimer = null;
+
+          teacherRecognition.onresult = (event) => {
+            finalText = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+              finalText += event.results[i][0].transcript;
+            }
+          };
+
+          teacherRecognition.onend = () => {
+            setTeacherVoiceState('thinking');
+            if (finalText.trim().length > 2) {
+              // Student said something — it's a doubt or response
+              handleTeacherDoubt(finalText.trim());
+            } else {
+              // Silence — continue to next point on current slide
+              if (teacherActive && !teacherPaused) {
+                explainCurrentPoint();
+              }
+            }
+          };
+
+          teacherRecognition.onerror = () => {
+            // On error, continue to next point
+            if (teacherActive && !teacherPaused) {
+              setTimeout(() => explainCurrentPoint(), 1500);
+            }
+          };
+
+          setTeacherVoiceState('listening');
+          teacherRecognition.start();
+
+          // Auto-stop after 8 seconds of listening
+          silenceTimer = setTimeout(() => {
+            try { teacherRecognition.stop(); } catch (e) {}
+          }, 8000);
+
+        } catch (e) {
+          // Fallback: just continue to next point
+          if (teacherActive && !teacherPaused) {
+            setTimeout(() => explainCurrentPoint(), 2000);
+          }
+        }
+      }
+
+      function stopTeacherListening() {
+        if (teacherRecognition) {
+          try { teacherRecognition.abort(); } catch (e) {}
+          teacherRecognition = null;
+        }
+      }
+
+      // --- Handle Doubt ---
+      function handleTeacherDoubt(doubtText) {
+        // Show doubt on board
+        teacherBoardContent.innerHTML += `<div style="background:rgba(79,209,197,0.1);border-left:3px solid #4fd1c5;padding:8px 12px;margin:12px 0;border-radius:0 8px 8px 0;">
+          <strong style="color:#4fd1c5;">📌 Student:</strong> <span style="color:rgba(255,255,255,0.8);">${doubtText}</span>
+        </div>`;
+        const board = document.getElementById('teacherBoard');
+        board.scrollTop = board.scrollHeight;
+
+        // Ask AI to answer the doubt in selected language directly using Stepfun
+        const lang = teacherExplainLang;
+        teacherTeachNext(`The student has a doubt: "${doubtText}". Answer it clearly and concisely in ${lang} language. Use examples. Then ask if they understood. Do NOT move to the next topic yet. You MUST inject appropriate emotion tags (<happy>, <sad>, <anger>, <fear>, <neutral>, <laugh>, <yawn>, <angry>, <clear>) throughout the answer to sound human.`, 'answering_doubt');
+      }
+
+      // --- Voice State UI ---
+      function setTeacherVoiceState(state) {
+        teacherVoiceIndicator.className = 'teacher-voice-indicator ' + state;
+        const labels = { listening: '🎙️ Listening', speaking: '🔊 Speaking', thinking: '💭 Thinking', ready: '✓ Ready' };
+        teacherVoiceState.textContent = labels[state] || state;
+      }
+
+      // --- Pause / Resume ---
+      document.getElementById('teacherPauseBtn').addEventListener('click', () => {
+        teacherPaused = !teacherPaused;
+        const btn = document.getElementById('teacherPauseBtn');
+        if (teacherPaused) {
+          btn.innerHTML = '<i class="fas fa-play"></i> Resume';
+          stopTeacherTTS();
+          stopTeacherListening();
+          setTeacherVoiceState('ready');
+        } else {
+          btn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+          explainCurrentPoint();
+        }
+      });
+
+      // --- Doubt Button ---
+      document.getElementById('teacherDoubtBtn').addEventListener('click', () => {
+        const area = document.getElementById('teacherDoubtArea');
+        area.style.display = area.style.display === 'none' ? 'flex' : 'none';
+        if (area.style.display === 'flex') {
+          document.getElementById('teacherDoubtInput').focus();
+          // Also pause teaching and listen
+          stopTeacherTTS();
+          stopTeacherListening();
+          teacherPaused = true;
+          setTeacherVoiceState('ready');
+        }
+      });
+
+      document.getElementById('teacherDoubtSend').addEventListener('click', () => {
+        const input = document.getElementById('teacherDoubtInput');
+        const text = input.value.trim();
+        if (text) {
+          input.value = '';
+          document.getElementById('teacherDoubtArea').style.display = 'none';
+          teacherPaused = false;
+          document.getElementById('teacherPauseBtn').innerHTML = '<i class="fas fa-pause"></i> Pause';
+          handleTeacherDoubt(text);
+        }
+      });
+      document.getElementById('teacherDoubtInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') document.getElementById('teacherDoubtSend').click();
+      });
+
+      // --- Practice Questions ---
+      document.getElementById('teacherPracticeBtn').addEventListener('click', async () => {
+        const area = document.getElementById('teacherPracticeArea');
+        if (area.style.display !== 'none') { area.style.display = 'none'; return; }
+        area.style.display = 'block';
+        document.getElementById('teacherQuestions').innerHTML = '<p style="color:rgba(255,255,255,0.4);font-size:0.8rem;">Generating questions...</p>';
+
+        // Pause teaching
+        stopTeacherTTS();
+        stopTeacherListening();
+        teacherPaused = true;
+        setTeacherVoiceState('thinking');
+
+        try {
+          const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + API_KEY, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: MODEL,
+              messages: [...teacherConversation, {
+                role: 'user',
+                content: 'Generate exactly 5 practice questions based on what you have taught so far. Format as JSON array: [{"q":"question text","a":"correct answer"}]. Return ONLY the JSON array, no other text.'
+              }],
+              max_tokens: 800
+            })
+          });
+          const data = await resp.json();
+          const content = data.choices?.[0]?.message?.content || '[]';
+
+          // Parse questions
+          let questions = [];
+          try {
+            const match = content.match(/\[[\s\S]*\]/);
+            if (match) questions = JSON.parse(match[0]);
+          } catch (e) { questions = []; }
+
+          if (questions.length === 0) {
+            document.getElementById('teacherQuestions').innerHTML = '<p style="color:#ef4444;font-size:0.8rem;">Could not generate questions. Try again.</p>';
+            return;
+          }
+
+          // Render questions
+          let html = '';
+          questions.forEach((q, i) => {
+            html += `<div class="tq-item" data-answer="${(q.a || '').replace(/"/g, '&quot;')}">
+              <label>Q${i + 1}: ${q.q}</label>
+              <input placeholder="Your answer..." class="tq-answer">
+            </div>`;
+          });
+          document.getElementById('teacherQuestions').innerHTML = html;
+          setTeacherVoiceState('ready');
+
+        } catch (err) {
+          document.getElementById('teacherQuestions').innerHTML = '<p style="color:#ef4444;font-size:0.8rem;">Error generating questions.</p>';
+          setTeacherVoiceState('ready');
+        }
+      });
+
+      // --- Submit Answers ---
+      document.getElementById('teacherSubmitAnswers').addEventListener('click', async () => {
+        const items = document.querySelectorAll('#teacherQuestions .tq-item');
+        if (items.length === 0) return;
+
+        let answersData = [];
+        items.forEach((item, i) => {
+          const q = item.querySelector('label').textContent;
+          const a = item.querySelector('.tq-answer').value.trim();
+          const correct = item.dataset.answer;
+          answersData.push({ question: q, studentAnswer: a, correctAnswer: correct });
+        });
+
+        // Send to AI for review
+        setTeacherVoiceState('thinking');
+        const reviewPrompt = `The student just answered practice questions. Review their answers.
+
+${answersData.map((a, i) => `Q${i + 1}: ${a.question}\nStudent Answer: "${a.studentAnswer}"\nCorrect Answer: "${a.correctAnswer}"`).join('\n\n')}
+
+REVIEW FORMAT:
+1. Start with a warm greeting and encouragement
+2. Show score (X/Y correct)
+3. Praise what they got right
+4. Explain mistakes gently with the correct answers
+5. End with motivation`;
+
+        document.getElementById('teacherPracticeArea').style.display = 'none';
+        teacherPaused = false;
+        document.getElementById('teacherPauseBtn').innerHTML = '<i class="fas fa-pause"></i> Pause';
+        teacherTeachNext(reviewPrompt);
+      });
+
+      // --- Roadmap ---
+      document.getElementById('teacherRoadmapBtn').addEventListener('click', async () => {
+        stopTeacherTTS();
+        stopTeacherListening();
+        teacherPaused = true;
+        setTeacherVoiceState('thinking');
+
+        teacherBoardContent.innerHTML += `<div style="margin:16px 0;padding:12px;background:rgba(167,139,250,0.1);border-left:3px solid #a78bfa;border-radius:0 8px 8px 0;">
+          <strong style="color:#a78bfa;">🗺️ Generating Roadmap...</strong>
+        </div>`;
+        const board = document.getElementById('teacherBoard');
+        board.scrollTop = board.scrollHeight;
+
+        teacherPaused = false;
+        teacherTeachNext(`Generate a complete learning roadmap for "${teacherSubject} — ${teacherTopicName}" at ${teacherLevel} level. Format as a numbered timeline with estimated time for each milestone. Include prerequisites, core concepts, advanced topics, and practice recommendations. Use markdown headers and bullet points.`);
+      });
+
+      // --- Save PDF ---
+      document.getElementById('teacherPdfBtn').addEventListener('click', () => {
+        if (!teacherBoardContent || typeof html2pdf === 'undefined') {
+          alert('PDF generation not available');
+          return;
+        }
+
+        const element = teacherBoardContent.cloneNode(true);
+        element.style.background = '#1a3a2a';
+        element.style.color = '#fff';
+        element.style.padding = '20px';
+
+        html2pdf().set({
+          margin: 10,
+          filename: `Shark_Teacher_${teacherSubject}_${teacherTopicName}.pdf`,
+          image: { type: 'jpeg', quality: 0.95 },
+          html2canvas: { scale: 2, backgroundColor: '#1a3a2a' },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        }).from(element).save();
+      });
+
+      // --- End Class ---
+      document.getElementById('teacherEndBtn').addEventListener('click', endTeacherClass);
+      document.getElementById('teacherBackBtn').addEventListener('click', () => {
+        if (teacherActive) {
+          if (confirm('End current class?')) endTeacherClass();
+        } else {
+          teacherOverlay.classList.remove('active');
+        }
+      });
+
+      async function endTeacherClass() {
+        teacherActive = false;
+        clearInterval(teacherTimerInterval);
+        stopTeacherTTS();
+        stopTeacherListening();
+        setTeacherVoiceState('ready');
+
+        // Save session to IndexedDB
+        saveTeacherSession({
+          subject: teacherSubject,
+          topic: teacherTopicName,
+          level: teacherLevel,
+          duration: teacherDurationMins,
+          transcript: teacherTranscript,
+          sections: teacherSectionCount
+        });
+
+        // Show ending message on board
+        const userName = document.getElementById('sidebarName')?.textContent || 'Student';
+        teacherBoardContent.innerHTML += `<div style="margin:20px 0;padding:16px;background:rgba(79,209,197,0.1);border:1px solid rgba(79,209,197,0.2);border-radius:12px;text-align:center;">
+          <h2 style="color:#4fd1c5;margin:0 0 8px;">🎓 Class Complete!</h2>
+          <p style="color:rgba(255,255,255,0.7);">Great job, ${userName}! You covered ${teacherSectionCount} sections.</p>
+          <p style="color:rgba(255,255,255,0.5);font-size:0.85rem;margin-top:8px;">Tap PDF to save this lesson, or close to exit.</p>
+        </div>`;
+        const board = document.getElementById('teacherBoard');
+        board.scrollTop = board.scrollHeight;
+      }
+
+      // Add teacher overlay to backButton handler
+      const origBackHandler = window._teacherBackCheck;
+      // We'll patch into the existing backButton handler via checking in the existing listener
 
     })();
   </script>
