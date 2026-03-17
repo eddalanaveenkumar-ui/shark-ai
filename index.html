@@ -5553,15 +5553,16 @@ Generate 4-8 slides with 2-5 points each. Cover "${teacherTopicName}" comprehens
 
         const point = slide.points[teacherCurrentPoint];
         const lang = teacherExplainLang;
-        const prevPoints = slide.points.slice(0, teacherCurrentPoint).join(', ');
 
-        const explainMsg = `As an expert teacher, write the detailed ENGLISH board text for the concept: "${point}" (which is under the topic "${slide.title}").
-IMPORTANT INSTRUCTIONS:
-- Write detailed content in English ONLY (definitions, examples, key facts, code snippets if relevant).
-- Use heading "### ${point}" followed by thorough explanation paragraphs. NOT just a single sentence.
-- Include real-world examples and practical applications suitable for a ${teacherLevel} level student.
-- DO NOT INCLUDE ANY SPEECH TEXT. JUST THE BOARD TEXT. 
-- Do not use ---SPEECH--- separator. Just provide the educational board text immediately.`;
+        const explainMsg = `As an expert teacher, write CONCISE English board text for: "${point}" (under topic "${slide.title}").
+STRICT RULES:
+- Maximum 75 words ONLY. Be brief but clear.
+- Start with heading "### ${point}"
+- Give a 1-2 sentence definition/explanation.
+- If this is a programming/coding topic, ALWAYS include a short beginner-friendly code example in a code block with comments explaining each line.
+- If not a coding topic, give one real-world example.
+- Suitable for ${teacherLevel} level student.
+- ONLY output the board text. No speech, no separator.`;
 
         teacherTeachNext(explainMsg, 'explaining');
       }
@@ -5605,12 +5606,12 @@ IMPORTANT INSTRUCTIONS:
             return;
           }
 
-          // IF EXPLAINING: Task 1 - Instantly stream English board text using Arcee-AI
+          // IF EXPLAINING: Task 1 - Instantly stream English board text using Arcee-AI (max 75 words)
           teacherConversation.push({ role: 'user', content: userMsg });
           const boardResp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: { 'Authorization': 'Bearer ' + API_KEY, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ model: 'arcee-ai/trinity-large-preview:free', messages: teacherConversation, stream: true, max_tokens: 2000 })
+            body: JSON.stringify({ model: 'arcee-ai/trinity-large-preview:free', messages: teacherConversation, stream: true, max_tokens: 400 })
           });
 
           const reader = boardResp.body.getReader();
@@ -5662,11 +5663,7 @@ IMPORTANT INSTRUCTIONS:
           // Task 2 - Translate and Explain in chosen Indian language using Stepfun
           setTeacherVoiceState('thinking');
           const lang = teacherExplainLang;
-          const translateMsg = `Now, read the English board text you just wrote. As an AI Voice Agent, provide a highly detailed, warm, and conversational spoken explanation of that EXACT text entirely in the ${lang} language (use ${lang} vocabulary + English context keywords). Speak as if you are a teacher explaining this to a student face-to-face. Ask if they understood at the end. 
-IMPORTANT: To make your voice expressive, you MUST inject emotion tags frequently throughout your speech. 
-Available tags: <happy>, <sad>, <anger>, <fear>, <neutral>, <laugh>, <yawn>, <angry>, <clear>.
-Example usage: <happy> Welcome! <neutral> Now let's explore this. <laugh> It's quite easy actually!
-ONLY provide the raw spoken text WITH THESE TAGS, nothing else. Do not use asterisks or formatting.`;
+          const translateMsg = `Read the English board text above. Now explain it as a spoken lecture in ${lang} language (use ${lang} vocabulary + English technical keywords). Speak warmly like a teacher in a classroom. Keep it under 60 words. Ask if they understood at the end. ONLY provide the spoken text, nothing else. No asterisks, no formatting, no markdown.`;
 
           const tempMessages = [...teacherConversation, { role: 'user', content: translateMsg }];
           const speechResp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -5771,46 +5768,55 @@ ONLY provide the raw spoken text WITH THESE TAGS, nothing else. Do not use aster
         });
       }
 
-      // --- TTS for teacher ---
+      // --- TTS for teacher (uses native browser voices with best Indian language matching) ---
       function teacherSpeak(text) {
         return new Promise(async (resolve) => {
           if (!('speechSynthesis' in window)) { resolve(); return; }
-          // Remove Markdown formatting chars but LEAVE < and > for Svara emotion tags
-          const cleanForSvara = text.replace(/[#*`_\[\]()~\-]/g, '').trim();
-          if (!cleanForSvara) { resolve(); return; }
+          // Remove Markdown formatting and emotion tags
+          const clean = text.replace(/[#*`_\[\]()~\-]/g, '').replace(/<[^>]+>/g, '').trim();
+          if (!clean) { resolve(); return; }
 
           teacherIsSpeaking = true;
           stopTeacherListening();
 
           const langCode = langToCode[teacherExplainLang] || 'en-IN';
 
-          try {
-             const engine = document.getElementById('ttsEngineSelect')?.value || 'browser';
-             
-             if (engine === 'xtts' && localStorage.getItem('XTTS_FRONTEND_DOWNLOADED') === 'true') {
-                 // The user activated the loaded frontend XTTS simulated processor
-                 await xttsOfflineTTS(cleanForSvara, langCode);
-                 teacherIsSpeaking = false;
-                 resolve();
-                 return;
-             } else {
-                 throw new Error("Using standard Native Browser TTS fallback");
-             }
-          } catch(err) {
-             // 2. Fallback to Browser Built-in Indian Google Voices
-             // Remove the tags so the browser doesn't try to spell them out
-             const cleanForBrowser = cleanForSvara.replace(/<[^>]+>/g, '').trim();
-             const utterance = new SpeechSynthesisUtterance(cleanForBrowser);
-             utterance.rate = 1.0;
-             utterance.pitch = 1.0;
+          // Split long text into sentences for better TTS handling
+          const sentences = clean.match(/[^.!?]+[.!?]+/g) || [clean];
+          
+          for (const sentence of sentences) {
+            if (!teacherActive || teacherPaused) break;
+            const trimmed = sentence.trim();
+            if (!trimmed) continue;
+            
+            await new Promise((sentResolve) => {
+              const utterance = new SpeechSynthesisUtterance(trimmed);
+              utterance.rate = 0.95;
+              utterance.pitch = 1.05;
 
-             const voice = getTeacherVoice(langCode);
-             if (voice) utterance.voice = voice;
+              // Find best matching voice for the language
+              const voices = window.speechSynthesis.getVoices();
+              let bestVoice = null;
+              // Priority 1: Google voice matching exact lang code
+              bestVoice = voices.find(v => v.name.includes('Google') && v.lang === langCode);
+              // Priority 2: Google voice matching lang prefix  
+              if (!bestVoice) bestVoice = voices.find(v => v.name.includes('Google') && v.lang.startsWith(langCode.split('-')[0]));
+              // Priority 3: Any voice matching exact lang code
+              if (!bestVoice) bestVoice = voices.find(v => v.lang === langCode);
+              // Priority 4: Any voice matching lang prefix
+              if (!bestVoice) bestVoice = voices.find(v => v.lang.startsWith(langCode.split('-')[0]));
+              // Priority 5: Indian English Google voice as last resort
+              if (!bestVoice) bestVoice = voices.find(v => v.name.includes('Google') && v.lang.includes('en-IN'));
+              if (bestVoice) utterance.voice = bestVoice;
 
-             utterance.onend = () => { teacherIsSpeaking = false; resolve(); };
-             utterance.onerror = () => { teacherIsSpeaking = false; resolve(); };
-             window.speechSynthesis.speak(utterance);
+              utterance.onend = () => sentResolve();
+              utterance.onerror = () => sentResolve();
+              window.speechSynthesis.speak(utterance);
+            });
           }
+          
+          teacherIsSpeaking = false;
+          resolve();
         });
       }
 
