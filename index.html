@@ -769,7 +769,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       flex: 1;
       height: 100%;
       min-height: 0;
@@ -1572,13 +1572,7 @@
       color: #888;
     }
 
-    body.empty-chat-active #chat {
-      justify-content: center;
-    }
-    body.empty-chat-active .welcome-screen {
-      height: auto;
-      flex: none;
-    }
+
 
     .ds-action-row {
       display: flex;
@@ -2109,8 +2103,7 @@
     }
 
     .login-wrapper.hidden {
-      opacity: 0;
-      pointer-events: none;
+      display: none;
     }
 
     .login-box {
@@ -3723,24 +3716,26 @@
       const ttsAutoBtn = document.getElementById('ttsAutoToggleBtn');
       const ttsAutoIcon = document.getElementById('ttsAutoIcon');
 
-      ttsAutoBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        ttsAutoEnabled = !ttsAutoEnabled;
-        if (ttsAutoEnabled) {
-          ttsAutoIcon.className = "fas fa-volume-up";
-          ttsAutoBtn.title = "Auto-read: ON";
-          ttsAutoIcon.style.color = "var(--text-light)";
-        } else {
-          ttsAutoIcon.className = "fas fa-volume-mute";
-          ttsAutoBtn.title = "Auto-read: OFF";
-          ttsAutoIcon.style.color = "inherit";
-          if (window.Capacitor && window.Capacitor.Plugins.TextToSpeech) {
-            window.Capacitor.Plugins.TextToSpeech.stop();
-          } else if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
+      if (ttsAutoBtn) {
+        ttsAutoBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          ttsAutoEnabled = !ttsAutoEnabled;
+          if (ttsAutoEnabled) {
+            if (ttsAutoIcon) ttsAutoIcon.className = "fas fa-volume-up";
+            ttsAutoBtn.title = "Auto-read: ON";
+            if (ttsAutoIcon) ttsAutoIcon.style.color = "var(--text-light)";
+          } else {
+            if (ttsAutoIcon) ttsAutoIcon.className = "fas fa-volume-mute";
+            ttsAutoBtn.title = "Auto-read: OFF";
+            if (ttsAutoIcon) ttsAutoIcon.style.color = "inherit";
+            if (window.Capacitor && window.Capacitor.Plugins.TextToSpeech) {
+              window.Capacitor.Plugins.TextToSpeech.stop();
+            } else if ('speechSynthesis' in window) {
+              window.speechSynthesis.cancel();
+            }
           }
-        }
-      });
+        });
+      }
 
       // --- TTS with in-message word highlighting ---
       let ttsActiveElement = null;
